@@ -3,7 +3,6 @@ package dk.sdu.ap.apnotepad
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -41,15 +40,14 @@ class MainActivity : AppCompatActivity() {
 
         val sharedPreferences =
             applicationContext.getSharedPreferences(
-                "dk.sdu.ap.apnotepad.notes",
+                "dk.sdu.ap.apnotepad",
                 Context.MODE_PRIVATE
             )
         val set = sharedPreferences.getStringSet("notes", null) as HashSet<String>?
 
-        if (set == null) {
-            notes.add("Example note")
-        } else {
+        if (set != null) {
             notes = ArrayList(set)
+            emojis = ArrayList(sharedPreferences.getStringSet("emojis", null) as HashSet<String>?)
         }
 
         arrayAdapter =
@@ -71,13 +69,14 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("Yes",
                     DialogInterface.OnClickListener { dialogInterface, i ->
                         notes.removeAt(itemToDelete)
+                        emojis.removeAt(itemToDelete)
                         arrayAdapter!!.notifyDataSetChanged()
                         val sharedPreferences = applicationContext.getSharedPreferences(
-                            "dk.sdu.ap.apnotepad.notes",
+                            "dk.sdu.ap.apnotepad",
                             Context.MODE_PRIVATE
                         )
-                        val set: HashSet<String> = HashSet(notes)
-                        sharedPreferences.edit().putStringSet("notes", set).apply()
+                        sharedPreferences.edit().putStringSet("notes", HashSet(notes)).apply()
+                        sharedPreferences.edit().putStringSet("emojis", HashSet(emojis)).apply()
                     }).setNegativeButton("No", null).show()
             true
         }
@@ -85,6 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         var notes: ArrayList<String> = ArrayList()
+        var emojis: ArrayList<String> = ArrayList()
         var arrayAdapter: ArrayAdapter<String>? = null
     }
 }
