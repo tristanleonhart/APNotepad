@@ -16,6 +16,7 @@ import com.vanniktech.emoji.ios.IosEmojiProvider
 
 class NoteEditorActivity : AppCompatActivity() {
     var noteId = 0
+    var type_todo = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,9 +24,10 @@ class NoteEditorActivity : AppCompatActivity() {
         setContentView(R.layout.activity_note_editor)
 
         noteId = intent.getIntExtra("noteId", -1)
+        type_todo = intent.getBooleanExtra("type_todo", false)
         if (noteId == -1) {
             // Create a new note
-            MainActivity.notes.add("")
+            MainActivity.notes.add(if (type_todo) "[]" else "")
             MainActivity.emojis.add(String(Character.toChars(0x1F60A)))
             noteId = MainActivity.notes.size - 1
             MainActivity.arrayAdapter?.notifyDataSetChanged()
@@ -44,7 +46,7 @@ class NoteEditorActivity : AppCompatActivity() {
 
         // Insert the note fragment
         val ft = supportFragmentManager.beginTransaction()
-        if (noteId == 1) // todo (detect note type)
+        if (type_todo)
         {
             ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment.newInstance(noteId))
         }

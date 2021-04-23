@@ -24,8 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
-        if (item.itemId === R.id.add_note) {
+        if (item.itemId === R.id.add_note || item.itemId === R.id.add_todo) {
             val intent = Intent(applicationContext, NoteEditorActivity::class.java)
+            intent.putExtra("type_todo", item.itemId === R.id.add_todo)
             startActivity(intent)
             return true
         }
@@ -56,7 +57,9 @@ class MainActivity : AppCompatActivity() {
 
         notesList.onItemClickListener = OnItemClickListener { adapterView, view, i, l ->
             val intent = Intent(applicationContext, NoteEditorActivity::class.java)
+            val type_todo = notes[i].startsWith("[") // todo (read type from database)
             intent.putExtra("noteId", i)
+            intent.putExtra("type_todo", type_todo)
             startActivity(intent)
         }
 

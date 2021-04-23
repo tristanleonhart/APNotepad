@@ -1,5 +1,6 @@
 package dk.sdu.ap.apnotepad
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,11 +8,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 
-class TodoNoteFragment : Fragment() {
+class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedListener {
     private var noteId: Int = 0
-    private lateinit var adapter: TodoItemRecyclerViewAdapter
+    private val todoItems: ArrayList<TodoItem> = ArrayList()
+    private val adapter = TodoItemRecyclerViewAdapter(todoItems)
+    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,18 +37,43 @@ class TodoNoteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // data to populate the RecyclerView with
-        val animalNames: ArrayList<String> = ArrayList()
-        animalNames.add("Horse")
-        animalNames.add("Cow")
-        animalNames.add("Camel")
-        animalNames.add("Sheep")
-        animalNames.add("Goat")
+        val jsonStr = MainActivity.notes[noteId]
+        if (jsonStr.isNotEmpty())
+        {
+            val jsonType = object: TypeToken<ArrayList<TodoItem>>(){}.type
+            todoItems.addAll(gson.fromJson<ArrayList<TodoItem>>(jsonStr, jsonType))
+            adapter.notifyDataSetChanged()
+        }
+
+        // listen for item changes
+        adapter.setItemChangedListener(this)
+
         // set up the RecyclerView
         val recyclerView: RecyclerView = view.findViewById(R.id.todoItems)
         recyclerView.layoutManager = LinearLayoutManager(activity)
-        adapter = TodoItemRecyclerViewAdapter(animalNames)
         recyclerView.adapter = adapter
+
+        // set up add FAB
+        val addFab = view.findViewById<FloatingActionButton>(R.id.addFab)
+        addFab.setOnClickListener { addNewTodoItem() }
+    }
+
+    private fun addNewTodoItem() {
+        val item = TodoItem(false, "")
+        todoItems.add(0, item)
+        adapter.notifyItemInserted(0)
+        saveTodoList()
+    }
+
+    private fun saveTodoList() {
+        MainActivity.notes[noteId] = gson.toJson(todoItems)
+        MainActivity.arrayAdapter?.notifyDataSetChanged()
+        val sharedPreferences = activity?.applicationContext?.getSharedPreferences(
+            "dk.sdu.ap.apnotepad",
+            Context.MODE_PRIVATE
+        )
+        sharedPreferences?.edit()?.putStringSet("notes", HashSet(MainActivity.notes))
+            ?.apply()
     }
 
     companion object {
@@ -54,5 +85,10 @@ class TodoNoteFragment : Fragment() {
                     putInt("noteId", noteId)
                 }
             }
+    }
+
+    override fun onItemChanged(position: Int, item: TodoItem) {
+        todoItems[position] = item
+        saveTodoList()
     }
 }
