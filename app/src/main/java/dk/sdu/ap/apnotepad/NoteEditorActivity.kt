@@ -44,7 +44,14 @@ class NoteEditorActivity : AppCompatActivity() {
 
         // Insert the note fragment
         val ft = supportFragmentManager.beginTransaction()
-        ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment.newInstance(noteId))
+        if (noteId == 1) // todo (detect note type)
+        {
+            ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment.newInstance(noteId))
+        }
+        else
+        {
+            ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment.newInstance(noteId))
+        }
         ft.commit()
     }
 

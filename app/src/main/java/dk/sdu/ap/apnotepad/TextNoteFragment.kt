@@ -10,11 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 
-/**
- * A simple [Fragment] subclass.
- * Use the [TextNoteFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class TextNoteFragment : Fragment() {
     private var noteId: Int = 0
 
@@ -25,8 +20,10 @@ class TextNoteFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_text_note, container, false)
     }
@@ -48,7 +45,8 @@ class TextNoteFragment : Fragment() {
                     "dk.sdu.ap.apnotepad",
                     Context.MODE_PRIVATE
                 )
-                sharedPreferences?.edit()?.putStringSet("notes", HashSet(MainActivity.notes))?.apply()
+                sharedPreferences?.edit()?.putStringSet("notes", HashSet(MainActivity.notes))
+                    ?.apply()
             }
 
             override fun afterTextChanged(s: Editable) {
@@ -59,11 +57,12 @@ class TextNoteFragment : Fragment() {
 
     companion object {
 
-        @JvmStatic fun newInstance(noteId: Int) =
-                TextNoteFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt("noteId", noteId)
-                    }
+        @JvmStatic
+        fun newInstance(noteId: Int) =
+            TextNoteFragment().apply {
+                arguments = Bundle().apply {
+                    putInt("noteId", noteId)
                 }
+            }
     }
 }
