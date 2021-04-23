@@ -7,20 +7,10 @@
     android:layout_height="match_parent"
     tools:context=".NoteEditorActivity">
 
-    <EditText
-        android:id="@+id/noteBody"
+    <FrameLayout
+        android:id="@+id/noteFragmentPlaceholder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:background="@android:color/transparent"
-        android:ems="10"
-        android:gravity="top|start"
-        android:importantForAutofill="no"
-        android:inputType="textMultiLine"
-        android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +37,7 @@
         android:layout_marginRight="16dp"
         android:importantForAutofill="no"
         android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@+id/noteBody"
+        app:layout_constraintBottom_toTopOf="@+id/noteFragmentPlaceholder"
         app:layout_constraintEnd_toStartOf="@+id/noteTitle"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"

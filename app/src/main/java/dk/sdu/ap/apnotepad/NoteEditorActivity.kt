@@ -22,11 +22,6 @@ class NoteEditorActivity : AppCompatActivity() {
         EmojiManager.install(IosEmojiProvider())
         setContentView(R.layout.activity_note_editor)
 
-        val title = findViewById<TextView>(R.id.noteTitle)
-        val body = findViewById<TextView>(R.id.noteBody)
-
-        title.text = "Note Title"
-
         noteId = intent.getIntExtra("noteId", -1)
         if (noteId == -1) {
             // Create a new note
@@ -42,28 +37,15 @@ class NoteEditorActivity : AppCompatActivity() {
             sharedPreferences.edit().putStringSet("emojis", HashSet(MainActivity.emojis)).apply()
         }
 
-        body.text = MainActivity.notes[noteId]
+        val title = findViewById<TextView>(R.id.noteTitle)
+        title.text = "Note Title" // Todo
+
         setUpEmojiPopup()
 
-        body.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-                // do nothing
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                MainActivity.notes[noteId] = s.toString()
-                MainActivity.arrayAdapter?.notifyDataSetChanged()
-                val sharedPreferences = applicationContext.getSharedPreferences(
-                    "dk.sdu.ap.apnotepad",
-                    Context.MODE_PRIVATE
-                )
-                sharedPreferences.edit().putStringSet("notes", HashSet(MainActivity.notes)).apply()
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                // do nothing
-            }
-        })
+        // Insert the note fragment
+        val ft = supportFragmentManager.beginTransaction()
+        ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment.newInstance(noteId))
+        ft.commit()
     }
 
     private fun setUpEmojiPopup() {
