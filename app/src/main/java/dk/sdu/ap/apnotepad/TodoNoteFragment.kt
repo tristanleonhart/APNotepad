@@ -1,6 +1,5 @@
 package dk.sdu.ap.apnotepad
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,17 +13,9 @@ import com.google.gson.reflect.TypeToken
 
 
 class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedListener {
-    private var noteId: Int = 0
     private val todoItems: ArrayList<TodoItem> = ArrayList()
     private val adapter = TodoItemRecyclerViewAdapter(todoItems)
     private val gson = Gson()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            noteId = it.getInt("noteId")
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,7 +28,7 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val jsonStr = MainActivity.notes[noteId]
+        val jsonStr = (activity as NoteEditorActivity).note!!.text
         if (jsonStr.isNotEmpty())
         {
             val jsonType = object: TypeToken<ArrayList<TodoItem>>(){}.type
@@ -66,25 +57,7 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
     }
 
     private fun saveTodoList() {
-        MainActivity.notes[noteId] = gson.toJson(todoItems)
-        MainActivity.arrayAdapter?.notifyDataSetChanged()
-        val sharedPreferences = activity?.applicationContext?.getSharedPreferences(
-            "dk.sdu.ap.apnotepad",
-            Context.MODE_PRIVATE
-        )
-        sharedPreferences?.edit()?.putStringSet("notes", HashSet(MainActivity.notes))
-            ?.apply()
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun newInstance(noteId: Int) =
-            TodoNoteFragment().apply {
-                arguments = Bundle().apply {
-                    putInt("noteId", noteId)
-                }
-            }
+        (activity as NoteEditorActivity).note!!.text = gson.toJson(todoItems)
     }
 
     override fun onItemChanged(position: Int, item: TodoItem) {

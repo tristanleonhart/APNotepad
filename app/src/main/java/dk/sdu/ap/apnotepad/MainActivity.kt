@@ -1,20 +1,25 @@
 package dk.sdu.ap.apnotepad
 
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.AdapterView.OnItemClickListener
-import android.widget.AdapterView.OnItemLongClickListener
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClickListener {
+    var databaseHelper: DatabaseHelper? = null
+
+    private var path: ArrayList<Long> = ArrayList()
+    private var current_note_position: Int? = null
+    var current_folder_position: Int? = null
+
+    val folderItems: ArrayList<FolderItem> = ArrayList()
+    val adapter = FolderItemRecyclerViewAdapter(folderItems)
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val menuInflater = menuInflater
@@ -26,8 +31,10 @@ class MainActivity : AppCompatActivity() {
         super.onOptionsItemSelected(item)
         if (item.itemId === R.id.add_note || item.itemId === R.id.add_todo) {
             val intent = Intent(applicationContext, NoteEditorActivity::class.java)
-            intent.putExtra("type_todo", item.itemId === R.id.add_todo)
-            startActivity(intent)
+            val type = if (item.itemId == R.id.add_todo) 2 else 1
+            intent.putExtra("type", type)
+            intent.putExtra("folderId", path.last())
+            startActivityForResult(intent, 0)
             return true
         }
         return false
@@ -37,57 +44,93 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val notesList: ListView = findViewById(R.id.notesList)
+        // Uncomment line below to reset database on app startup
+        //applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
 
-        val sharedPreferences =
-            applicationContext.getSharedPreferences(
-                "dk.sdu.ap.apnotepad",
-                Context.MODE_PRIVATE
-            )
-        val set = sharedPreferences.getStringSet("notes", null) as HashSet<String>?
+        // get database
+        databaseHelper = DatabaseHelper.getInstance(this)
 
-        if (set != null) {
-            notes = ArrayList(set)
-            emojis = ArrayList(sharedPreferences.getStringSet("emojis", null) as HashSet<String>?)
+        path.add(0)
+        folderItems.addAll(databaseHelper!!.getFolderItems(path.last()))
+        adapter.notifyDataSetChanged()
+
+        // listen for item clicks
+        adapter.setItemClickListener(this)
+
+        // set up the RecyclerView
+        val recyclerView: RecyclerView = findViewById(R.id.folderItems)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val noteCreated = intent.getBooleanExtra("noteCreated", false)
+        if (noteCreated) {
+            // Note was created
+            val note_id = intent.getLongExtra("noteId", -1)
+            val note = databaseHelper!!.getNote(note_id) as Note
+            folderItems.add(NoteUtils.folderItemFromNote(note))
+            adapter.notifyItemInserted(folderItems.size - 1)
+        } else {
+            // Note was updated
+            val note_id = folderItems[current_note_position!!].id
+            val note = databaseHelper!!.getNote(note_id) as Note
+            folderItems[current_note_position!!] = NoteUtils.folderItemFromNote(note)
+            adapter.notifyItemChanged(current_note_position!!)
+            current_note_position = null
         }
+    }
 
-        arrayAdapter =
-            ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1, notes)
-        notesList.adapter = arrayAdapter
+    override fun onBackPressed() {
+        if (path.last() != 0.toLong()) {
+            // go up one folder level
+            path.removeLast()
+            folderItems.clear()
+            folderItems.addAll(databaseHelper!!.getFolderItems(path.last()))
+            adapter.notifyDataSetChanged()
+        } else {
+            // normal back press behaviour
+            super.onBackPressed()
+        }
+    }
 
-        notesList.onItemClickListener = OnItemClickListener { adapterView, view, i, l ->
+    override fun onItemClick(position: Int) {
+        if (folderItems[position].note) {
+            // note was clicked (open it)
+            current_note_position = position
+            val note = databaseHelper!!.getNote(folderItems[position].id) as Note
             val intent = Intent(applicationContext, NoteEditorActivity::class.java)
-            val type_todo = notes[i].startsWith("[") // todo (read type from database)
-            intent.putExtra("noteId", i)
-            intent.putExtra("type_todo", type_todo)
-            startActivity(intent)
+            intent.putExtra("noteId", note.id)
+            intent.putExtra("folderId", path.last())
+            startActivityForResult(intent, 0)
+        } else {
+            // folder was clicked (show contents)
+            val folder_id = folderItems[position].id
+            // go down one folder level
+            path.add(folder_id)
+            folderItems.clear()
+            folderItems.addAll(databaseHelper!!.getFolderItems(path.last()))
+            adapter.notifyDataSetChanged()
         }
+    }
 
-        notesList.onItemLongClickListener = OnItemLongClickListener { adapterView, view, i, l ->
-            val itemToDelete = i
+    override fun onItemLongClick(position: Int) {
+        if (folderItems[position].note) {
+            // delete note dialog
             AlertDialog.Builder(this@MainActivity)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Delete Note")
                 .setMessage("Do you want to delete this note?")
                 .setPositiveButton("Yes",
                     DialogInterface.OnClickListener { dialogInterface, i ->
-                        notes.removeAt(itemToDelete)
-                        emojis.removeAt(itemToDelete)
-                        arrayAdapter!!.notifyDataSetChanged()
-                        val sharedPreferences = applicationContext.getSharedPreferences(
-                            "dk.sdu.ap.apnotepad",
-                            Context.MODE_PRIVATE
-                        )
-                        sharedPreferences.edit().putStringSet("notes", HashSet(notes)).apply()
-                        sharedPreferences.edit().putStringSet("emojis", HashSet(emojis)).apply()
+                        databaseHelper!!.deleteNote(folderItems[position].id)
+                        folderItems.removeAt(position)
+                        adapter.notifyItemRemoved(position)
                     }).setNegativeButton("No", null).show()
-            true
+        } else {
+            // edit or delete folder dialog
+            // todo
         }
-    }
-
-    companion object {
-        var notes: ArrayList<String> = ArrayList()
-        var emojis: ArrayList<String> = ArrayList()
-        var arrayAdapter: ArrayAdapter<String>? = null
     }
 }

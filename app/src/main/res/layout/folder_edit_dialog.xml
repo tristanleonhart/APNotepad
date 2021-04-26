@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/edit_folder_dialog_root_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".FolderEditDialog"
+    >
+
+    <EditText
+        android:id="@+id/editFolderDialogName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:inputType="textCapSentences"
+        android:textSize="24sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/editFolderDialogEmoji"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/editFolderDialogEmoji"
+        tools:text="Folder name" />
+
+    <com.vanniktech.emoji.EmojiEditText
+        android:id="@+id/editFolderDialogEmoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:importantForAutofill="no"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="LabelFor,TextFields" />
+</androidx.constraintlayout.widget.ConstraintLayout>

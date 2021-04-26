@@ -1,6 +1,6 @@
 package dk.sdu.ap.apnotepad
 
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -15,46 +15,66 @@ import com.vanniktech.emoji.ios.IosEmojiProvider
 
 
 class NoteEditorActivity : AppCompatActivity() {
-    var noteId = 0
-    var type_todo = false
+    private var databaseHelper: DatabaseHelper? = null
+
+    var noteCreated : Boolean = false
+    var noteId : Long = 0
+    var folderId : Long = 0
+    var note : Note? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         EmojiManager.install(IosEmojiProvider())
         setContentView(R.layout.activity_note_editor)
 
-        noteId = intent.getIntExtra("noteId", -1)
-        type_todo = intent.getBooleanExtra("type_todo", false)
-        if (noteId == -1) {
+        // get database
+        databaseHelper = DatabaseHelper.getInstance(this)
+
+        noteId = intent.getLongExtra("noteId", -1)
+        folderId = intent.getLongExtra("folderId", -1)
+
+        if (noteId == (-1).toLong()) {
             // Create a new note
-            MainActivity.notes.add(if (type_todo) "[]" else "")
-            MainActivity.emojis.add(String(Character.toChars(0x1F60A)))
-            noteId = MainActivity.notes.size - 1
-            MainActivity.arrayAdapter?.notifyDataSetChanged()
-            val sharedPreferences = applicationContext.getSharedPreferences(
-                "dk.sdu.ap.apnotepad",
-                Context.MODE_PRIVATE
-            )
-            sharedPreferences.edit().putStringSet("notes", HashSet(MainActivity.notes)).apply()
-            sharedPreferences.edit().putStringSet("emojis", HashSet(MainActivity.emojis)).apply()
+            noteCreated = true
+            val type = intent.getIntExtra("type", 1)
+            val emoji = String(Character.toChars(0x1F60A))
+            val title = "Note Title"
+            val text = if (type == 1) "" else "[]"
+            note = Note(-1, type, emoji, title, text)
+            noteId = databaseHelper!!.insertNote(note!!, folderId)
+        } else {
+            note = databaseHelper!!.getNote(noteId)
         }
 
         val title = findViewById<TextView>(R.id.noteTitle)
-        title.text = "Note Title" // Todo
+        title.text = note!!.title
 
         setUpEmojiPopup()
 
         // Insert the note fragment
         val ft = supportFragmentManager.beginTransaction()
-        if (type_todo)
+        if (note!!.type == 1)
         {
-            ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment.newInstance(noteId))
+            ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment())
         }
         else
         {
-            ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment.newInstance(noteId))
+            ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment())
         }
         ft.commit()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        databaseHelper!!.updateNote(note as Note)
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val intent = Intent()
+        intent.putExtra("noteCreated", noteCreated)
+        intent.putExtra("noteId", noteId)
+        setResult(RESULT_OK, intent)
     }
 
     private fun setUpEmojiPopup() {
@@ -62,7 +82,7 @@ class NoteEditorActivity : AppCompatActivity() {
         noteEmoji.isCursorVisible = false
         noteEmoji.inputType = InputType.TYPE_NULL
         noteEmoji.setBackgroundResource(android.R.color.transparent)
-        noteEmoji.setText(MainActivity.emojis[noteId])
+        noteEmoji.setText(note!!.emoji)
         val emojiPopup = EmojiPopup.Builder.fromRootView(findViewById(R.id.rootView))
             .setKeyboardAnimationStyle(R.style.emoji_fade_animation_style)
             .setOnEmojiBackspaceClickListener { noteEmoji.setText(String(Character.toChars(0x1F60A))) }
@@ -86,13 +106,7 @@ class NoteEditorActivity : AppCompatActivity() {
                 }
                 noteEmoji.addTextChangedListener(this)
                 // Store emoji
-                MainActivity.emojis[noteId] = noteEmoji.text.toString()
-                val sharedPreferences = applicationContext.getSharedPreferences(
-                    "dk.sdu.ap.apnotepad",
-                    Context.MODE_PRIVATE
-                )
-                sharedPreferences.edit().putStringSet("emojis", HashSet(MainActivity.emojis))
-                    .apply()
+                note!!.emoji = noteEmoji.text.toString()
             }
 
             override fun afterTextChanged(s: Editable) {
