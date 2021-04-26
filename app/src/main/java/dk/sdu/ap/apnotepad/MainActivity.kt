@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         setContentView(R.layout.activity_main)
 
         // Uncomment line below to reset database on app startup
-        //applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
+        applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
 
         // get database
         databaseHelper = DatabaseHelper.getInstance(this)

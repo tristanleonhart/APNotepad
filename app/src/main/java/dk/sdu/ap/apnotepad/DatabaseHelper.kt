@@ -207,14 +207,16 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
                     TITLE_NOTES + " TEXT, " +
                     TEXT_NOTES + " TEXT, " +
                     TYPE_NOTES + " INTEGER NOT NULL, " +
-                    FOLDER_ID_NOTES + " INTEGER NOT NULL REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ")" +
+                    FOLDER_ID_NOTES + " INTEGER NOT NULL, " +
+                    "FOREIGN KEY (" + FOLDER_ID_NOTES + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ")" +
                     ");"
         private const val CREATE_TABLE_FOLDERS =
             "create table " + TABLE_NAME_FOLDERS + "(" +
                     _ID_FOLDERS + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     EMOJI_FOLDERS + " TEXT, " +
                     NAME_FOLDERS + " TEXT NOT NULL, " +
-                    PARENT_ID_FOLDERS + " INTEGER REFERENCES " + _ID_FOLDERS +
+                    PARENT_ID_FOLDERS + " INTEGER, " +
+                    "FOREIGN KEY (" + PARENT_ID_FOLDERS + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ")" +
                     ");"
     }
 }
