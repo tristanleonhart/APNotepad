@@ -36,17 +36,27 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
             override fun onClick(dialog:DialogInterface, which:Int) {
                 val emoji = editFolderDialogEmoji!!.text.toString()
                 val name = editFolderDialogName!!.text.toString()
-                activity.databaseHelper!!.updateFolder(folder_id, emoji, name)
-                activity.folderItems[activity.current_folder_position!!].emoji = emoji
-                activity.folderItems[activity.current_folder_position!!].name = name
-                activity.adapter.notifyItemChanged(activity.current_folder_position!!)
-                activity.current_folder_position = null
+                if (folder_id == (-1).toLong()) {
+                    // folder created
+                    val parent_id = activity.path.last()
+                    val folder_id = activity.databaseHelper!!.insertFolder(emoji, name, parent_id)
+                    activity.folderItems.add(0, FolderItem(false, folder_id, emoji, name, null))
+                    activity.adapter.notifyItemInserted(0)
+                } else {
+                    // folder updated
+                    activity.databaseHelper!!.updateFolder(folder_id, emoji, name)
+                    activity.folderItems[activity.current_folder_position!!].emoji = emoji
+                    activity.folderItems[activity.current_folder_position!!].name = name
+                    activity.adapter.notifyItemChanged(activity.current_folder_position!!)
+                    activity.current_folder_position = null
+                }
                 dismiss()
             }
         })
         builder.setNegativeButton("Delete Folder", object: DialogInterface.OnClickListener {
             override fun onClick(dialog:DialogInterface, which:Int) {
                 activity.databaseHelper!!.deleteFolder(folder_id)
+                activity.folderItems.removeAt(activity.current_folder_position!!)
                 activity.adapter.notifyItemRemoved(activity.current_folder_position!!)
                 activity.current_folder_position = null
                 dismiss()
@@ -56,10 +66,15 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
     }
 
     private fun buildView(): View? {
+
         val view = View.inflate(context, R.layout.folder_edit_dialog, null)
         editFolderDialogName = view.findViewById(R.id.editFolderDialogName)
         editFolderDialogEmoji = view.findViewById(R.id.editFolderDialogEmoji)
         editFolderRootView = view.findViewById(R.id.edit_folder_dialog_root_view)
+        if (activity.current_folder_position != null) {
+            val name = activity.folderItems[activity.current_folder_position!!].name
+            editFolderDialogName!!.setText(name)
+        }
         setUpEmojiPopup()
         return editFolderRootView
     }
@@ -68,7 +83,12 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
         editFolderDialogEmoji!!.isCursorVisible = false
         editFolderDialogEmoji!!.inputType = InputType.TYPE_NULL
         editFolderDialogEmoji!!.setBackgroundResource(android.R.color.transparent)
-        val emoji = activity.folderItems[activity.current_folder_position!!].emoji
+        var emoji : String
+        if (activity.current_folder_position != null) {
+            emoji = activity.folderItems[activity.current_folder_position!!].emoji
+        } else {
+            emoji = String(Character.toChars(0x1F60A))
+        }
         editFolderDialogEmoji!!.setText(emoji)
         val emojiPopup = EmojiPopup.Builder.fromRootView(editFolderRootView)
             .setKeyboardAnimationStyle(R.style.emoji_fade_animation_style)

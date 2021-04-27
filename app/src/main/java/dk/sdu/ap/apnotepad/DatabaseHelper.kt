@@ -208,7 +208,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
                     TEXT_NOTES + " TEXT, " +
                     TYPE_NOTES + " INTEGER NOT NULL, " +
                     FOLDER_ID_NOTES + " INTEGER NOT NULL, " +
-                    "FOREIGN KEY (" + FOLDER_ID_NOTES + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ")" +
+                    "FOREIGN KEY (" + FOLDER_ID_NOTES + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ") ON DELETE CASCADE" +
                     ");"
         private const val CREATE_TABLE_FOLDERS =
             "create table " + TABLE_NAME_FOLDERS + "(" +
@@ -216,7 +216,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
                     EMOJI_FOLDERS + " TEXT, " +
                     NAME_FOLDERS + " TEXT NOT NULL, " +
                     PARENT_ID_FOLDERS + " INTEGER, " +
-                    "FOREIGN KEY (" + PARENT_ID_FOLDERS + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ")" +
+                    "FOREIGN KEY (" + PARENT_ID_FOLDERS + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ") ON DELETE CASCADE" +
                     ");"
     }
 }

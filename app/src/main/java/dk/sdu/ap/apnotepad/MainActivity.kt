@@ -9,12 +9,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.vanniktech.emoji.EmojiManager
+import com.vanniktech.emoji.ios.IosEmojiProvider
 
 
 class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClickListener {
     var databaseHelper: DatabaseHelper? = null
 
-    private var path: ArrayList<Long> = ArrayList()
+    var path: ArrayList<Long> = ArrayList()
     private var current_note_position: Int? = null
     var current_folder_position: Int? = null
 
@@ -30,11 +32,16 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         super.onOptionsItemSelected(item)
         if (item.itemId === R.id.add_note || item.itemId === R.id.add_todo) {
+            // add note
             val intent = Intent(applicationContext, NoteEditorActivity::class.java)
             val type = if (item.itemId == R.id.add_todo) 2 else 1
             intent.putExtra("type", type)
             intent.putExtra("folderId", path.last())
             startActivityForResult(intent, 0)
+            return true
+        } else if (item.itemId === R.id.add_folder) {
+            // add folder
+            FolderEditDialog.showDialog(this, -1)
             return true
         }
         return false
@@ -42,6 +49,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EmojiManager.install(IosEmojiProvider())
         setContentView(R.layout.activity_main)
 
         // Uncomment line below to reset database on app startup
@@ -70,8 +78,9 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             // Note was created
             val note_id = data.getLongExtra("noteId", -1)
             val note = databaseHelper!!.getNote(note_id) as Note
-            folderItems.add(NoteUtils.folderItemFromNote(note))
-            adapter.notifyItemInserted(folderItems.size - 1)
+            val index = getInsertNoteIndex()
+            folderItems.add(index, NoteUtils.folderItemFromNote(note))
+            adapter.notifyItemInserted(index)
         } else {
             // Note was updated
             val note_id = folderItems[current_note_position!!].id
@@ -130,7 +139,19 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
                     }).setNegativeButton("No", null).show()
         } else {
             // edit or delete folder dialog
-            // todo
+            current_folder_position = position
+            FolderEditDialog.showDialog(this, folderItems[position].id)
         }
+    }
+
+    fun getInsertNoteIndex() : Int {
+        var index = 0
+        for (folderItem in folderItems) {
+            if (folderItem.note) {
+                break
+            }
+            index++
+        }
+        return index
     }
 }
