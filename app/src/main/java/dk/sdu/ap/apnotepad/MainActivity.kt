@@ -65,10 +65,10 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val noteCreated = intent.getBooleanExtra("noteCreated", false)
+        val noteCreated = data!!.getBooleanExtra("noteCreated", false)
         if (noteCreated) {
             // Note was created
-            val note_id = intent.getLongExtra("noteId", -1)
+            val note_id = data.getLongExtra("noteId", -1)
             val note = databaseHelper!!.getNote(note_id) as Note
             folderItems.add(NoteUtils.folderItemFromNote(note))
             adapter.notifyItemInserted(folderItems.size - 1)

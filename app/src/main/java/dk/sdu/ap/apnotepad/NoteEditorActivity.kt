@@ -70,11 +70,11 @@ class NoteEditorActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         val intent = Intent()
         intent.putExtra("noteCreated", noteCreated)
         intent.putExtra("noteId", noteId)
         setResult(RESULT_OK, intent)
+        super.onBackPressed()
     }
 
     private fun setUpEmojiPopup() {
