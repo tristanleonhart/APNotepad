@@ -1,7 +1,6 @@
 package dk.sdu.ap.apnotepad
 
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
@@ -65,6 +64,16 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
         return builder.create()
     }
 
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        activity.current_folder_position = null
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        activity.current_folder_position = null
+    }
+
     private fun buildView(): View? {
 
         val view = View.inflate(context, R.layout.folder_edit_dialog, null)
@@ -83,11 +92,10 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
         editFolderDialogEmoji!!.isCursorVisible = false
         editFolderDialogEmoji!!.inputType = InputType.TYPE_NULL
         editFolderDialogEmoji!!.setBackgroundResource(android.R.color.transparent)
-        var emoji : String
-        if (activity.current_folder_position != null) {
-            emoji = activity.folderItems[activity.current_folder_position!!].emoji
+        val emoji = if (activity.current_folder_position != null) {
+            activity.folderItems[activity.current_folder_position!!].emoji
         } else {
-            emoji = String(Character.toChars(0x1F60A))
+            String(Character.toChars(0x1F60A))
         }
         editFolderDialogEmoji!!.setText(emoji)
         val emojiPopup = EmojiPopup.Builder.fromRootView(editFolderRootView)
@@ -102,7 +110,7 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 editFolderDialogEmoji!!.removeTextChangedListener(this)
-                var emoji = s.subSequence(start, start + count)
+                val emoji = s.subSequence(start, start + count)
                 if (emoji.isEmpty() || !EmojiUtils.isOnlyEmojis(emoji) || EmojiUtils.emojisCount(
                         emoji
                     ) != 1
