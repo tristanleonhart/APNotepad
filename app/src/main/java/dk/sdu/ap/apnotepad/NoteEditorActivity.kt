@@ -42,6 +42,7 @@ class NoteEditorActivity : AppCompatActivity() {
             val text = if (type == 1) "" else "[]"
             note = Note(-1, type, emoji, title, text)
             noteId = databaseHelper!!.insertNote(note!!, folderId)
+            note!!.id = noteId
         } else {
             note = databaseHelper!!.getNote(noteId)
         }
