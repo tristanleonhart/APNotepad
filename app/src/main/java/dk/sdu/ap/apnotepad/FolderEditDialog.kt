@@ -29,7 +29,11 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(context!!)
-        builder.setTitle("Edit or Delete Folder")
+        if (folder_id == (-1).toLong()) {
+            builder.setTitle("Create Folder")
+        } else {
+            builder.setTitle("Edit or Delete Folder")
+        }
         builder.setView(buildView())
         builder.setPositiveButton("Save", object: DialogInterface.OnClickListener {
             override fun onClick(dialog:DialogInterface, which:Int) {
@@ -52,15 +56,23 @@ class FolderEditDialog private constructor(val activity: MainActivity, val folde
                 dismiss()
             }
         })
-        builder.setNegativeButton("Delete Folder", object: DialogInterface.OnClickListener {
-            override fun onClick(dialog:DialogInterface, which:Int) {
-                activity.databaseHelper!!.deleteFolder(folder_id)
-                activity.folderItems.removeAt(activity.current_folder_position!!)
-                activity.adapter.notifyItemRemoved(activity.current_folder_position!!)
-                activity.current_folder_position = null
-                dismiss()
-            }
-        })
+        if (folder_id == (-1).toLong()) {
+            builder.setNegativeButton("Cancel", object: DialogInterface.OnClickListener {
+                override fun onClick(dialog:DialogInterface, which:Int) {
+                    dismiss()
+                }
+            })
+        } else {
+            builder.setNegativeButton("Delete Folder", object: DialogInterface.OnClickListener {
+                override fun onClick(dialog:DialogInterface, which:Int) {
+                    activity.databaseHelper!!.deleteFolder(folder_id)
+                    activity.folderItems.removeAt(activity.current_folder_position!!)
+                    activity.adapter.notifyItemRemoved(activity.current_folder_position!!)
+                    activity.current_folder_position = null
+                    dismiss()
+                }
+            })
+        }
         return builder.create()
     }
 
