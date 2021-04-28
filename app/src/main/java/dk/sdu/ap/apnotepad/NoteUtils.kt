@@ -7,34 +7,39 @@ class NoteUtils {
     companion object {
         private val gson = Gson()
 
-        fun getNotePreview(note: Note) : String {
-            return getNotePreview(note.type, note.text)
-        }
-
         fun getNotePreview(type: Int, text: String) : String {
             var preview : String
-            if (type == 2) {
+            if (type == APNotepadConstants.NOTE_TYPE_CHECKLIST) {
+                // create preview for a checklist note
                 preview = ""
-                val jsonType = object: TypeToken<ArrayList<TodoItem>>(){}.type
+                val jsonType = object : TypeToken<ArrayList<TodoItem>>() {}.type
                 for (todoItem in gson.fromJson<ArrayList<TodoItem>>(text, jsonType)) {
                     if (preview.isNotEmpty()) {
                         preview += ", "
                     }
-                    preview += if (todoItem.checked) 0x2611.toChar() else 0x2610.toChar()
+                    // add a checkbox
+                    preview += if (todoItem.checked) {
+                        APNotepadConstants.CHECKBOX_CHECKED
+                    } else {
+                        APNotepadConstants.CHECKBOX_UNCHECKED
+                    }
                     preview += " " + todoItem.text
                 }
+                if (preview.isEmpty()) {
+                    preview = "Empty checklist"
+                }
             } else {
+                // create preview for a plaintext note
                 preview = text
+                if (preview.isEmpty()) {
+                    preview = "Empty note"
+                }
             }
-            return if (preview.length <= 100) {
-                preview
-            } else {
-                preview.take(100) + "..."
-            }
+            return preview
         }
 
         fun folderItemFromNote(note: Note) : FolderItem {
-            val preview = getNotePreview(note)
+            val preview = getNotePreview(note.type, note.text)
             return FolderItem(true, note.id, note.emoji, note.title, preview)
         }
     }

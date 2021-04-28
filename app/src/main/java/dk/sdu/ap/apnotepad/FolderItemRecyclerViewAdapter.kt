@@ -44,35 +44,50 @@ class FolderItemRecyclerViewAdapter(private val folderItems: ArrayList<FolderIte
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (folderItems[position].note) 0 else 1
+        return if (folderItems[position].isNote) {
+            APNotepadConstants.FOLDER_ITEM_TYPE_NOTE
+        } else {
+            APNotepadConstants.FOLDER_ITEM_TYPE_FOLDER
+        }
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == 1) {
-            // Folder
-            val view = LayoutInflater.from(viewGroup.context)
-                .inflate(R.layout.folder_item_folder, viewGroup, false)
-            FolderViewHolder(view)
-        } else {
-            // Note
+        return if (viewType == APNotepadConstants.FOLDER_ITEM_TYPE_NOTE) {
+            // return a NoteViewHolder
             val view = LayoutInflater.from(viewGroup.context)
                 .inflate(R.layout.folder_item_note, viewGroup, false)
             NoteViewHolder(view)
+        } else {
+            // return a FolderViewHolder
+            val view = LayoutInflater.from(viewGroup.context)
+                .inflate(R.layout.folder_item_folder, viewGroup, false)
+            FolderViewHolder(view)
         }
     }
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
-        if (viewHolder.itemViewType == 1) {
-            // Folder
+        if (viewHolder.itemViewType == APNotepadConstants.FOLDER_ITEM_TYPE_NOTE) {
+            // bind to a NoteViewHolder
+            val noteViewHolder = viewHolder as NoteViewHolder
+            noteViewHolder.noteEmoji.text = folderItems[position].emoji
+            val title = folderItems[position].name
+            if (title.isEmpty()) {
+                noteViewHolder.noteTitle.text = APNotepadConstants.UNTITLED_PLACEHOLDER
+            } else {
+                noteViewHolder.noteTitle.text = folderItems[position].name
+            }
+            noteViewHolder.notePreview.text = folderItems[position].preview
+        } else {
+            // bind to a FolderViewHolder
             val folderViewHolder = viewHolder as FolderViewHolder
             folderViewHolder.folderEmoji.text = folderItems[position].emoji
             folderViewHolder.folderName.text = folderItems[position].name
-        } else {
-            // Note
-            val noteViewHolder = viewHolder as NoteViewHolder
-            noteViewHolder.noteEmoji.text = folderItems[position].emoji
-            noteViewHolder.noteTitle.text = folderItems[position].name
-            noteViewHolder.notePreview.text = folderItems[position].preview
+            val title = folderItems[position].name
+            if (title.isEmpty()) {
+                folderViewHolder.folderName.text = APNotepadConstants.UNTITLED_PLACEHOLDER
+            } else {
+                folderViewHolder.folderName.text = folderItems[position].name
+            }
         }
     }
 

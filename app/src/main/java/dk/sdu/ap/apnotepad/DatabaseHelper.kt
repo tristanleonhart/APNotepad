@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_NAME, null, DB_VERSION) {
 
-    fun insertNote(note: Note, folder_id: Long?) : Long {
+    fun insertNote(note: Note, folder_id: Long) : Long {
         val contentValues = ContentValues()
         contentValues.put(EMOJI_NOTES, note.emoji)
         contentValues.put(TITLE_NOTES, note.title)
@@ -26,7 +26,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         writableDatabase.update(TABLE_NAME_NOTES, contentValues, _ID_NOTES + "=" + note.id, null)
     }
 
-    fun insertFolder(emoji: String?, name: String?, parent_id: Long?) : Long {
+    fun insertFolder(emoji: String?, name: String?, parent_id: Long) : Long {
         val contentValues = ContentValues()
         contentValues.put(EMOJI_FOLDERS, emoji)
         contentValues.put(NAME_FOLDERS, name)
@@ -41,12 +41,12 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$_ID_FOLDERS=$_id", null)
     }
 
-    fun getNote(note_id: Long) : Note? {
+    fun getNote(note_id: Long) : Note {
         val columns = arrayOf(EMOJI_NOTES, TITLE_NOTES, TEXT_NOTES, TYPE_NOTES)
         val selection = "$_ID_NOTES = ?"
         val selectionArgs = arrayOf("" + note_id)
         val cursor = writableDatabase.query(
-            DatabaseHelper.TABLE_NAME_NOTES,
+            TABLE_NAME_NOTES,
             columns,
             selection,
             selectionArgs,
@@ -67,7 +67,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
             note = Note(note_id, type, emoji, title, text)
         }
         cursor.close()
-        return note
+        return note as Note
     }
 
     fun getFolderItems(folder_id: Long) : ArrayList<FolderItem> {

@@ -13,12 +13,25 @@ class TodoItemRecyclerViewAdapter(private val todoItems: ArrayList<TodoItem>) :
     RecyclerView.Adapter<TodoItemRecyclerViewAdapter.ViewHolder>() {
 
     private var itemChangedListener: ItemChangedListener? = null
+    private var itemLongClickListener: ItemLongClickListener? = null
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view), TextWatcher {
-        val todoItemText: EditText = view.findViewById(R.id.todoItemText)
         val todoItemCheckBox: CheckBox = view.findViewById(R.id.todoItemCheckBox)
+        val todoItemText: EditText = view.findViewById(R.id.todoItemText)
 
         init {
+            view.setOnLongClickListener {
+                itemLongClickListener?.onItemLongClick(adapterPosition)
+                true
+            }
+            todoItemText.setOnLongClickListener {
+                itemLongClickListener?.onItemLongClick(adapterPosition)
+                true
+            }
+            todoItemCheckBox.setOnLongClickListener {
+                itemLongClickListener?.onItemLongClick(adapterPosition)
+                true
+            }
             todoItemText.addTextChangedListener(this)
             todoItemCheckBox.setOnClickListener {
                 val checked = todoItemCheckBox.isChecked
@@ -66,5 +79,13 @@ class TodoItemRecyclerViewAdapter(private val todoItems: ArrayList<TodoItem>) :
 
     fun interface ItemChangedListener {
         fun onItemChanged(position: Int, item: TodoItem)
+    }
+
+    fun setItemLongClickListener(itemLongClickListener: ItemLongClickListener) {
+        this.itemLongClickListener = itemLongClickListener
+    }
+
+    interface ItemLongClickListener {
+        fun onItemLongClick(position: Int)
     }
 }

@@ -5,19 +5,21 @@
     android:id="@+id/edit_folder_dialog_root_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".FolderEditDialog"
-    >
+    android:paddingBottom="24dp"
+    tools:context=".FolderEditDialog">
 
     <EditText
         android:id="@+id/editFolderDialogName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        android:hint="@string/folder_name_hint"
+        android:importantForAutofill="no"
         android:inputType="textCapSentences"
-        android:textSize="24sp"
+        android:textSize="20sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/editFolderDialogEmoji"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/editFolderDialogEmoji"
@@ -27,12 +29,13 @@
         android:id="@+id/editFolderDialogEmoji"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
         android:importantForAutofill="no"
-        android:textSize="30sp"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="LabelFor,TextFields" />
+        tools:ignore="LabelFor,TextFields"
+        tools:text="\u263A" />
 </androidx.constraintlayout.widget.ConstraintLayout>

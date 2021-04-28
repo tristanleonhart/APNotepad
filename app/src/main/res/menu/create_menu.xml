@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/add_note"
-        android:title="Add text note" />
+        android:id="@+id/add_note_plaintext"
+        android:title="@string/add_note_plaintext" />
     <item
-        android:id="@+id/add_todo"
-        android:title="Add todo list" />
+        android:id="@+id/add_note_checklist"
+        android:title="@string/add_note_checklist" />
     <item
         android:id="@+id/add_folder"
-        android:title="Add folder" />
+        android:title="@string/add_folder" />
 </menu>
