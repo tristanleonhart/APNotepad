@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cafe.adriel.krumbsview.KrumbsView
+import cafe.adriel.krumbsview.model.Krumb
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
 
@@ -190,7 +191,13 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             val folderId = folderItems[position].id
             // go down one folder level
             path.add(folderId)
-            breadcrumbs.addItem(databaseHelper.getFolder(folderId))
+            val folder = databaseHelper.getFolder(folderId)
+            val breadcrumbText = if (folder.name.isEmpty()) {
+                APNotepadConstants.UNTITLED_PLACEHOLDER
+            } else {
+                folder.name
+            }
+            breadcrumbs.addItem(Krumb(breadcrumbText))
             folderItems.clear()
             folderItems.addAll(databaseHelper.getFolderItems(path.last()))
             adapter.notifyDataSetChanged()

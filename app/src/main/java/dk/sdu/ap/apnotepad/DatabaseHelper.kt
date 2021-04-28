@@ -37,7 +37,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         val contentValues = ContentValues()
         contentValues.put(EMOJI_FOLDERS, folder.emoji)
         contentValues.put(NAME_FOLDERS, folder.name)
-        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$ID_FOLDERS=$folder.id", null)
+        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, ID_FOLDERS + "=" + folder.id, null)
     }
 
     fun getNote(id: Long) : Note {
