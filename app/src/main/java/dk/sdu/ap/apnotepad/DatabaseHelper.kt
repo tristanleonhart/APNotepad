@@ -2,7 +2,6 @@ package dk.sdu.ap.apnotepad
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
@@ -23,7 +22,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         contentValues.put(EMOJI_NOTES, note.emoji)
         contentValues.put(TITLE_NOTES, note.title)
         contentValues.put(TEXT_NOTES, note.text)
-        writableDatabase.update(TABLE_NAME_NOTES, contentValues, _ID_NOTES + "=" + note.id, null)
+        writableDatabase.update(TABLE_NAME_NOTES, contentValues, ID_NOTES + "=" + note.id, null)
     }
 
     fun insertFolder(emoji: String?, name: String?, parent_id: Long) : Long {
@@ -34,17 +33,17 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         return writableDatabase.insert(TABLE_NAME_FOLDERS, null, contentValues)
     }
 
-    fun updateFolder(_id: Long, emoji: String?, name: String?) {
+    fun updateFolder(id: Long, emoji: String?, name: String?) {
         val contentValues = ContentValues()
         contentValues.put(EMOJI_FOLDERS, emoji)
         contentValues.put(NAME_FOLDERS, name)
-        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$_ID_FOLDERS=$_id", null)
+        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$ID_FOLDERS=$id", null)
     }
 
-    fun getNote(note_id: Long) : Note {
+    fun getNote(id: Long) : Note {
         val columns = arrayOf(EMOJI_NOTES, TITLE_NOTES, TEXT_NOTES, TYPE_NOTES)
-        val selection = "$_ID_NOTES = ?"
-        val selectionArgs = arrayOf("" + note_id)
+        val selection = "$ID_NOTES = ?"
+        val selectionArgs = arrayOf("" + id)
         val cursor = writableDatabase.query(
             TABLE_NAME_NOTES,
             columns,
@@ -56,15 +55,15 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         )
         var note: Note? = null
         if (cursor.moveToNext()) {
-            val index_type = cursor.getColumnIndex(TYPE_NOTES)
-            val index_emoji = cursor.getColumnIndex(EMOJI_NOTES)
-            val index_title = cursor.getColumnIndex(TITLE_NOTES)
-            val index_text = cursor.getColumnIndex(TEXT_NOTES)
-            val type = cursor.getInt(index_type)
-            val emoji = cursor.getString(index_emoji)
-            val title = cursor.getString(index_title)
-            val text = cursor.getString(index_text)
-            note = Note(note_id, type, emoji, title, text)
+            val indexEmoji = cursor.getColumnIndex(EMOJI_NOTES)
+            val indexTitle = cursor.getColumnIndex(TITLE_NOTES)
+            val indexText = cursor.getColumnIndex(TEXT_NOTES)
+            val indexType = cursor.getColumnIndex(TYPE_NOTES)
+            val emoji = cursor.getString(indexEmoji)
+            val title = cursor.getString(indexTitle)
+            val text = cursor.getString(indexText)
+            val type = cursor.getInt(indexType)
+            note = Note(id, type, emoji, title, text)
         }
         cursor.close()
         return note as Note
@@ -72,50 +71,19 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
 
     fun getFolderItems(folder_id: Long) : ArrayList<FolderItem> {
         val folderItems: ArrayList<FolderItem> = ArrayList()
-        // folders
-        val cursorFolders = fetchFoldersInFolder(folder_id)
-        if (cursorFolders != null) {
-            val index_id = cursorFolders.getColumnIndex(_ID_FOLDERS)
-            val index_emoji = cursorFolders.getColumnIndex(EMOJI_FOLDERS)
-            val index_name = cursorFolders.getColumnIndex(NAME_FOLDERS)
-            while (cursorFolders.moveToNext())
-            {
-                val _id = cursorFolders.getLong(index_id)
-                val emoji = cursorFolders.getString(index_emoji)
-                val name = cursorFolders.getString(index_name)
-                folderItems.add(FolderItem(false, _id, emoji, name, null))
-            }
-            cursorFolders.close()
-        }
-        // notes
-        val cursorNotes = fetchNotesInFolder(folder_id)
-        if (cursorNotes != null) {
-            val index_id = cursorNotes.getColumnIndex(_ID_NOTES)
-            val index_type = cursorNotes.getColumnIndex(TYPE_NOTES)
-            val index_emoji = cursorNotes.getColumnIndex(EMOJI_NOTES)
-            val index_title = cursorNotes.getColumnIndex(TITLE_NOTES)
-            val index_text = cursorNotes.getColumnIndex(TEXT_NOTES)
-            while (cursorNotes.moveToNext())
-            {
-                val _id = cursorNotes.getLong(index_id)
-                val type = cursorNotes.getInt(index_type)
-                val emoji = cursorNotes.getString(index_emoji)
-                val title = cursorNotes.getString(index_title)
-                val text = cursorNotes.getString(index_text)
-                val preview = NoteUtils.getNotePreview(type, text)
-                folderItems.add(FolderItem(true, _id, emoji, title, preview))
-            }
-            cursorNotes.close()
-        }
+        // get all folders in folder
+        folderItems.addAll(getFoldersInFolder(folder_id))
+        // get all notes in folder
+        folderItems.addAll(getNotesInFolder(folder_id))
         return folderItems
     }
 
-    private fun fetchNotesInFolder(folder_id: Long?): Cursor? {
-        val columns = arrayOf(_ID_NOTES, EMOJI_NOTES, TITLE_NOTES, TEXT_NOTES, TYPE_NOTES)
+    private fun getNotesInFolder(folder_id: Long) : ArrayList<FolderItem> {
+        val columns = arrayOf(ID_NOTES, EMOJI_NOTES, TITLE_NOTES, TEXT_NOTES, TYPE_NOTES)
         val selection = "$FOLDER_ID_NOTES = ?"
         val selectionArgs = arrayOf("" + folder_id)
-        val sortOrder = "$_ID_NOTES ASC"
-        return writableDatabase.query(
+        val sortOrder = "$ID_NOTES DESC"
+        val cursor = writableDatabase.query(
             TABLE_NAME_NOTES,
             columns,
             selection,
@@ -124,14 +92,32 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
             null,
             sortOrder
         )
+        val indexId = cursor.getColumnIndex(ID_NOTES)
+        val indexEmoji = cursor.getColumnIndex(EMOJI_NOTES)
+        val indexTitle = cursor.getColumnIndex(TITLE_NOTES)
+        val indexText = cursor.getColumnIndex(TEXT_NOTES)
+        val indexType = cursor.getColumnIndex(TYPE_NOTES)
+        val folderItems: ArrayList<FolderItem> = ArrayList()
+        while (cursor.moveToNext())
+        {
+            val id = cursor.getLong(indexId)
+            val emoji = cursor.getString(indexEmoji)
+            val title = cursor.getString(indexTitle)
+            val text = cursor.getString(indexText)
+            val type = cursor.getInt(indexType)
+            val preview = NoteUtils.getNotePreview(type, text)
+            folderItems.add(FolderItem(true, id, emoji, title, preview))
+        }
+        cursor.close()
+        return folderItems
     }
 
-    private fun fetchFoldersInFolder(folder_id: Long?): Cursor? {
-        val columns = arrayOf(_ID_FOLDERS, EMOJI_FOLDERS, NAME_FOLDERS)
+    private fun getFoldersInFolder(folder_id: Long) : ArrayList<FolderItem> {
+        val columns = arrayOf(ID_FOLDERS, EMOJI_FOLDERS, NAME_FOLDERS)
         val selection = "$PARENT_ID_FOLDERS = ?"
         val selectionArgs = arrayOf("" + folder_id)
-        val sortOrder = "$_ID_FOLDERS ASC"
-        return writableDatabase.query(
+        val sortOrder = "$ID_FOLDERS DESC"
+        val cursor = writableDatabase.query(
             TABLE_NAME_FOLDERS,
             columns,
             selection,
@@ -140,14 +126,27 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
             null,
             sortOrder
         )
+        val indexId = cursor.getColumnIndex(ID_FOLDERS)
+        val indexEmoji = cursor.getColumnIndex(EMOJI_FOLDERS)
+        val indexName = cursor.getColumnIndex(NAME_FOLDERS)
+        val folderItems: ArrayList<FolderItem> = ArrayList()
+        while (cursor.moveToNext())
+        {
+            val id = cursor.getLong(indexId)
+            val emoji = cursor.getString(indexEmoji)
+            val name = cursor.getString(indexName)
+            folderItems.add(FolderItem(false, id, emoji, name, null))
+        }
+        cursor.close()
+        return folderItems
     }
 
-    fun deleteNote(note_id: Long) {
-        writableDatabase.delete(TABLE_NAME_NOTES, "$_ID_NOTES=$note_id", null)
+    fun deleteNote(id: Long) {
+        writableDatabase.delete(TABLE_NAME_NOTES, "$ID_NOTES=$id", null)
     }
 
-    fun deleteFolder(_id: Long) {
-        writableDatabase.delete(TABLE_NAME_FOLDERS, "$_ID_FOLDERS=$_id", null)
+    fun deleteFolder(id: Long) {
+        writableDatabase.delete(TABLE_NAME_FOLDERS, "$ID_FOLDERS=$id", null)
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -168,7 +167,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
 
     private fun insertRootFolder(db: SQLiteDatabase) {
         val contentValues = ContentValues()
-        contentValues.put(_ID_FOLDERS, 0)
+        contentValues.put(ID_FOLDERS, APNotepadConstants.ROOT_FOLDER_ID)
         contentValues.put(NAME_FOLDERS, "ROOT")
         db.insert(TABLE_NAME_FOLDERS, null, contentValues)
     }
@@ -184,7 +183,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         }
 
         const val TABLE_NAME_NOTES = "notes"
-        const val _ID_NOTES = "_id"
+        const val ID_NOTES = "_id"
         const val EMOJI_NOTES = "emoji"
         const val TITLE_NOTES = "title"
         const val TEXT_NOTES = "text"
@@ -192,7 +191,7 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         const val FOLDER_ID_NOTES = "folder_id"
 
         const val TABLE_NAME_FOLDERS = "folders"
-        const val _ID_FOLDERS = "_id"
+        const val ID_FOLDERS = "_id"
         const val EMOJI_FOLDERS = "emoji"
         const val NAME_FOLDERS = "name"
         const val PARENT_ID_FOLDERS = "parent_id"
@@ -202,21 +201,21 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
 
         private const val CREATE_TABLE_NOTES =
             "create table " + TABLE_NAME_NOTES + "(" +
-                    _ID_NOTES + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    ID_NOTES + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     EMOJI_NOTES + " TEXT, " +
                     TITLE_NOTES + " TEXT, " +
                     TEXT_NOTES + " TEXT, " +
                     TYPE_NOTES + " INTEGER NOT NULL, " +
                     FOLDER_ID_NOTES + " INTEGER NOT NULL, " +
-                    "FOREIGN KEY (" + FOLDER_ID_NOTES + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ") ON DELETE CASCADE" +
+                    "FOREIGN KEY (" + FOLDER_ID_NOTES + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + ID_FOLDERS + ") ON DELETE CASCADE" +
                     ");"
         private const val CREATE_TABLE_FOLDERS =
             "create table " + TABLE_NAME_FOLDERS + "(" +
-                    _ID_FOLDERS + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    ID_FOLDERS + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     EMOJI_FOLDERS + " TEXT, " +
                     NAME_FOLDERS + " TEXT NOT NULL, " +
                     PARENT_ID_FOLDERS + " INTEGER, " +
-                    "FOREIGN KEY (" + PARENT_ID_FOLDERS + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + _ID_FOLDERS + ") ON DELETE CASCADE" +
+                    "FOREIGN KEY (" + PARENT_ID_FOLDERS + ") REFERENCES " + TABLE_NAME_FOLDERS + "(" + ID_FOLDERS + ") ON DELETE CASCADE" +
                     ");"
     }
 }
