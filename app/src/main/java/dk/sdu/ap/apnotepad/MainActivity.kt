@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cafe.adriel.krumbsview.KrumbsView
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
 
@@ -17,8 +18,9 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
     lateinit var databaseHelper: DatabaseHelper
 
     private lateinit var placeholder : ViewGroup
+    private lateinit var breadcrumbs : KrumbsView
 
-    val path: ArrayList<Long> = ArrayList()
+    var path: MutableList<Long> = ArrayList()
 
     var currentItemIdx: Int? = null
     val folderItems: ArrayList<FolderItem> = ArrayList()
@@ -63,15 +65,32 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         // get placeholder for empty RecyclerView
         placeholder = findViewById(R.id.folderItemsPlaceholder)
 
+        // configure breadcrumbs view
+        breadcrumbs = findViewById(R.id.breadcrumbs)
+        breadcrumbs.setOnPreviousItemClickListener {
+            // go up one folder level
+            folderLevelUp(false)
+        }
+
         // uncomment line below to reset database on app startup
         //applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
 
         // get database
         databaseHelper = DatabaseHelper.getInstance(this)
 
-        path.add(APNotepadConstants.ROOT_FOLDER_ID) // add the root folder
+        // check if a saved path is available
+        val savedPath = savedInstanceState?.getLongArray("path")
+        if (savedPath != null) {
+            // restore the path to the previous folder
+            path = savedPath.toMutableList()
+        } else {
+            // set the path to the root folder
+            path.clear()
+            path.add(APNotepadConstants.ROOT_FOLDER_ID)
+        }
 
-        // load the items inside the root folder
+        // load the items inside the current folder
+        folderItems.clear()
         folderItems.addAll(databaseHelper.getFolderItems(path.last()))
         adapter.notifyDataSetChanged()
 
@@ -132,16 +151,28 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
     }
 
     override fun onBackPressed() {
-        if (path.last() != 0.toLong()) {
+        if (path.last() != APNotepadConstants.ROOT_FOLDER_ID) {
             // go up one folder level
-            path.removeLast()
-            folderItems.clear()
-            folderItems.addAll(databaseHelper.getFolderItems(path.last()))
-            adapter.notifyDataSetChanged()
+            folderLevelUp(true)
         } else {
             // we are at the root folder level (normal back press behaviour)
             super.onBackPressed()
         }
+    }
+
+    private fun folderLevelUp(updateBreadcrumbs: Boolean) {
+        path.removeLast()
+        if (updateBreadcrumbs) {
+            breadcrumbs.removeLastItem()
+        }
+        folderItems.clear()
+        folderItems.addAll(databaseHelper.getFolderItems(path.last()))
+        adapter.notifyDataSetChanged()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLongArray("path", path.toLongArray())
     }
 
     override fun onItemClick(position: Int) {
@@ -159,6 +190,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             val folderId = folderItems[position].id
             // go down one folder level
             path.add(folderId)
+            breadcrumbs.addItem(databaseHelper.getFolder(folderId))
             folderItems.clear()
             folderItems.addAll(databaseHelper.getFolderItems(path.last()))
             adapter.notifyDataSetChanged()

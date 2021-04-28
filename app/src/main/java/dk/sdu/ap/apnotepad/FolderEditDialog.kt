@@ -40,14 +40,15 @@ class FolderEditDialog private constructor(private val activity: MainActivity, p
             val name = editFolderDialogName.text.toString()
             if (folder_id == (-1).toLong()) {
                 // folder is being created
-                val parentId = activity.path.last()
-                val folderId = activity.databaseHelper.insertFolder(emoji, name, parentId)
+                val folder = Folder(-1, emoji, name, activity.path.last())
+                val folderId = activity.databaseHelper.insertFolder(folder)
                 val folderItem = FolderItem(false, folderId, emoji, name, null)
                 activity.folderItems.add(0, folderItem)
                 activity.adapter.notifyItemInserted(0)
             } else {
                 // folder is being updated
-                activity.databaseHelper.updateFolder(folder_id, emoji, name)
+                val folder = Folder(folder_id, emoji, name, activity.path.last())
+                activity.databaseHelper.updateFolder(folder)
                 activity.folderItems[activity.currentItemIdx!!].emoji = emoji
                 activity.folderItems[activity.currentItemIdx!!].name = name
                 activity.adapter.notifyItemChanged(activity.currentItemIdx!!)

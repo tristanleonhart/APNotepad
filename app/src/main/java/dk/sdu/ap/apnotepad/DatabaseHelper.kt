@@ -25,19 +25,19 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         writableDatabase.update(TABLE_NAME_NOTES, contentValues, ID_NOTES + "=" + note.id, null)
     }
 
-    fun insertFolder(emoji: String?, name: String?, parent_id: Long) : Long {
+    fun insertFolder(folder: Folder) : Long {
         val contentValues = ContentValues()
-        contentValues.put(EMOJI_FOLDERS, emoji)
-        contentValues.put(NAME_FOLDERS, name)
-        contentValues.put(PARENT_ID_FOLDERS, parent_id)
+        contentValues.put(EMOJI_FOLDERS, folder.emoji)
+        contentValues.put(NAME_FOLDERS, folder.name)
+        contentValues.put(PARENT_ID_FOLDERS, folder.parent_id)
         return writableDatabase.insert(TABLE_NAME_FOLDERS, null, contentValues)
     }
 
-    fun updateFolder(id: Long, emoji: String?, name: String?) {
+    fun updateFolder(folder: Folder) {
         val contentValues = ContentValues()
-        contentValues.put(EMOJI_FOLDERS, emoji)
-        contentValues.put(NAME_FOLDERS, name)
-        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$ID_FOLDERS=$id", null)
+        contentValues.put(EMOJI_FOLDERS, folder.emoji)
+        contentValues.put(NAME_FOLDERS, folder.name)
+        writableDatabase.update(TABLE_NAME_FOLDERS, contentValues, "$ID_FOLDERS=$folder.id", null)
     }
 
     fun getNote(id: Long) : Note {
@@ -67,6 +67,33 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
         }
         cursor.close()
         return note as Note
+    }
+
+    fun getFolder(id: Long) : Folder {
+        val columns = arrayOf(EMOJI_FOLDERS, NAME_FOLDERS, PARENT_ID_FOLDERS)
+        val selection = "$ID_FOLDERS = ?"
+        val selectionArgs = arrayOf("" + id)
+        val cursor = writableDatabase.query(
+            TABLE_NAME_FOLDERS,
+            columns,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+        var folder: Folder? = null
+        if (cursor.moveToNext()) {
+            val indexEmoji = cursor.getColumnIndex(EMOJI_FOLDERS)
+            val indexName = cursor.getColumnIndex(NAME_FOLDERS)
+            val indexParentId = cursor.getColumnIndex(PARENT_ID_FOLDERS)
+            val emoji = cursor.getString(indexEmoji)
+            val name = cursor.getString(indexName)
+            val parentId = cursor.getLong(indexParentId)
+            folder = Folder(id, emoji, name, parentId)
+        }
+        cursor.close()
+        return folder as Folder
     }
 
     fun getFolderItems(folder_id: Long) : ArrayList<FolderItem> {
