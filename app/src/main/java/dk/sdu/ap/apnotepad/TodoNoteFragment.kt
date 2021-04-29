@@ -17,8 +17,13 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
 
     private lateinit var placeholder : ViewGroup
 
-    private val todoItems: ArrayList<TodoItem> = ArrayList()
+    private var openDialog : AlertDialog? = null
+    private var restoreDeleteItemDialog = false
+
+    private var currentItemIdx : Int = -1
+    private val todoItems : ArrayList<TodoItem> = ArrayList()
     private val adapter = TodoItemRecyclerViewAdapter(todoItems)
+
     private val gson = Gson()
 
     override fun onCreateView(
@@ -34,6 +39,14 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
 
         // get placeholder for empty RecyclerView
         placeholder = view.findViewById(R.id.todoItemsPlaceholder)
+
+        // restore the current item index
+        currentItemIdx = savedInstanceState?.getInt("currentItemIdx", -1) ?: -1
+
+        // restore open dialogs
+        if (savedInstanceState?.getBoolean("restoreDeleteItemDialog", false) == true) {
+            showDeleteItemDialog()
+        }
 
         val jsonStr = (activity as NoteEditorActivity).note.text
         if (jsonStr.isNotEmpty()) {
@@ -84,6 +97,17 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
         addFab.setOnClickListener { addNewTodoItem() }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("currentItemIdx", currentItemIdx)
+        outState.putBoolean("restoreDeleteItemDialog", restoreDeleteItemDialog)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        openDialog?.dismiss()
+    }
+
     private fun addNewTodoItem() {
         val item = TodoItem(false, "")
         todoItems.add(0, item)
@@ -101,15 +125,28 @@ class TodoNoteFragment : Fragment(), TodoItemRecyclerViewAdapter.ItemChangedList
     }
 
     override fun onItemLongClick(position: Int) {
-        AlertDialog.Builder(requireContext())
+        // save current item index
+        currentItemIdx = position
+        // show delete item dialog
+        showDeleteItemDialog()
+    }
+
+    private fun showDeleteItemDialog() {
+        restoreDeleteItemDialog = true
+        openDialog = AlertDialog.Builder(requireContext())
             .setTitle("Delete Item")
             .setMessage("Do you want to delete this item?")
             .setPositiveButton("Yes") { _, _ ->
-                todoItems.removeAt(position)
-                adapter.notifyItemRemoved(position)
+                todoItems.removeAt(currentItemIdx)
+                adapter.notifyItemRemoved(currentItemIdx)
                 saveTodoList()
             }
             .setNegativeButton("No", null)
+            .setOnDismissListener {
+                currentItemIdx = -1
+                restoreDeleteItemDialog = false
+                openDialog = null
+            }
             .show()
     }
 }

@@ -30,6 +30,9 @@ class NoteEditorActivity : AppCompatActivity() {
         // get database
         databaseHelper = DatabaseHelper.getInstance(this)
 
+        // restore editor state
+        noteCreated = savedInstanceState?.getBoolean("noteCreated", false) ?: false
+
         // get the id of the folder that this note is in
         folderId = intent.getLongExtra("folderId", -1)
 
@@ -43,6 +46,7 @@ class NoteEditorActivity : AppCompatActivity() {
             val text = if (type == APNotepadConstants.NOTE_TYPE_PLAINTEXT) "" else "[]"
             note = Note(-1, type, emoji, title, text)
             note.id = databaseHelper.insertNote(note, folderId)
+            intent.putExtra("noteId", note.id)
         } else {
             note = databaseHelper.getNote(noteId)
         }
@@ -55,6 +59,7 @@ class NoteEditorActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                // store the title
                 note.title = s.toString()
             }
 
@@ -79,6 +84,11 @@ class NoteEditorActivity : AppCompatActivity() {
         super.onPause()
         // save changes
         databaseHelper.updateNote(note)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("noteCreated", noteCreated)
     }
 
     override fun onBackPressed() {

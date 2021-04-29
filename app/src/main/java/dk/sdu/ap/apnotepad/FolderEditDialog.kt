@@ -15,69 +15,58 @@ import com.vanniktech.emoji.EmojiEditText
 import com.vanniktech.emoji.EmojiPopup
 import com.vanniktech.emoji.EmojiUtils
 
-class FolderEditDialog private constructor(private val activity: MainActivity, private val folder_id: Long) : DialogFragment() {
+class FolderEditDialog : DialogFragment() {
+    private lateinit var activity : MainActivity
+
     private lateinit var editFolderRootView : ViewGroup
     private lateinit var editFolderDialogEmoji : EmojiEditText
     private lateinit var editFolderDialogName : EditText
 
-    companion object {
-        fun showDialog(activity: MainActivity, folder_id: Long) {
-            // create and show the dialog
-            FolderEditDialog(activity, folder_id).show(activity.supportFragmentManager, null)
-        }
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        activity = requireActivity() as MainActivity
         val builder = AlertDialog.Builder(requireContext())
-        if (folder_id == (-1).toLong()) {
-            builder.setTitle("Create Folder")
-        } else {
+        if (activity.currentItemIdx >= 0) {
             builder.setTitle("Edit or Delete Folder")
+        } else {
+            builder.setTitle("Create Folder")
         }
         builder.setView(buildView())
         builder.setPositiveButton("Save") { _, _ ->
             val emoji = editFolderDialogEmoji.text.toString()
             val name = editFolderDialogName.text.toString()
-            if (folder_id == (-1).toLong()) {
+            if (activity.currentItemIdx >= 0) {
+                // folder is being updated
+                val folderId = activity.folderItems[activity.currentItemIdx].id
+                val folder = Folder(folderId, emoji, name, activity.path.last())
+                activity.databaseHelper.updateFolder(folder)
+                activity.folderItems[activity.currentItemIdx].emoji = emoji
+                activity.folderItems[activity.currentItemIdx].name = name
+                activity.adapter.notifyItemChanged(activity.currentItemIdx)
+            } else {
                 // folder is being created
                 val folder = Folder(-1, emoji, name, activity.path.last())
                 val folderId = activity.databaseHelper.insertFolder(folder)
                 val folderItem = FolderItem(false, folderId, emoji, name, null)
                 activity.folderItems.add(0, folderItem)
                 activity.adapter.notifyItemInserted(0)
-            } else {
-                // folder is being updated
-                val folder = Folder(folder_id, emoji, name, activity.path.last())
-                activity.databaseHelper.updateFolder(folder)
-                activity.folderItems[activity.currentItemIdx!!].emoji = emoji
-                activity.folderItems[activity.currentItemIdx!!].name = name
-                activity.adapter.notifyItemChanged(activity.currentItemIdx!!)
-                activity.currentItemIdx = null
             }
-            dismiss()
         }
-        if (folder_id == (-1).toLong()) {
-            builder.setNegativeButton("Cancel") { _, _ -> dismiss() }
-        } else {
+        if (activity.currentItemIdx >= 0) {
             builder.setNegativeButton("Delete Folder") { _, _ ->
-                activity.databaseHelper.deleteFolder(folder_id)
-                activity.folderItems.removeAt(activity.currentItemIdx!!)
-                activity.adapter.notifyItemRemoved(activity.currentItemIdx!!)
-                activity.currentItemIdx = null
-                dismiss()
+                val folderId = activity.folderItems[activity.currentItemIdx].id
+                activity.databaseHelper.deleteFolder(folderId)
+                activity.folderItems.removeAt(activity.currentItemIdx)
+                activity.adapter.notifyItemRemoved(activity.currentItemIdx)
             }
+        } else {
+            builder.setNegativeButton("Cancel", null)
         }
         return builder.create()
     }
 
-    override fun onCancel(dialog: DialogInterface) {
-        super.onCancel(dialog)
-        activity.currentItemIdx = null
-    }
-
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        activity.currentItemIdx = null
+        activity.currentItemIdx = -1
     }
 
     private fun buildView(): View {
@@ -85,9 +74,9 @@ class FolderEditDialog private constructor(private val activity: MainActivity, p
         editFolderDialogName = view.findViewById(R.id.editFolderDialogName)
         editFolderDialogEmoji = view.findViewById(R.id.editFolderDialogEmoji)
         editFolderRootView = view.findViewById(R.id.edit_folder_dialog_root_view)
-        if (activity.currentItemIdx != null) {
+        if (activity.currentItemIdx >= 0) {
             // folder is being edited
-            val name = activity.folderItems[activity.currentItemIdx!!].name
+            val name = activity.folderItems[activity.currentItemIdx].name
             editFolderDialogName.setText(name)
         }
         setUpEmojiPopup()
@@ -98,9 +87,9 @@ class FolderEditDialog private constructor(private val activity: MainActivity, p
         editFolderDialogEmoji.isCursorVisible = false
         editFolderDialogEmoji.inputType = InputType.TYPE_NULL
         editFolderDialogEmoji.setBackgroundResource(android.R.color.transparent)
-        editFolderDialogEmoji.setText(if (activity.currentItemIdx != null) {
+        editFolderDialogEmoji.setText(if (activity.currentItemIdx >= 0) {
             // folder is being edited
-            activity.folderItems[activity.currentItemIdx!!].emoji
+            activity.folderItems[activity.currentItemIdx].emoji
         } else {
             // folder is being created
             APNotepadConstants.DEFAULT_EMOJI
