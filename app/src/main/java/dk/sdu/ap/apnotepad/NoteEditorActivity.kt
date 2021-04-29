@@ -70,14 +70,16 @@ class NoteEditorActivity : AppCompatActivity() {
 
         setUpEmojiPopup()
 
-        // insert the note fragment
-        val ft = supportFragmentManager.beginTransaction()
-        if (note.type == APNotepadConstants.NOTE_TYPE_PLAINTEXT) {
-            ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment())
-        } else {
-            ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment())
+        if (supportFragmentManager.findFragmentByTag("noteBodyFragment") == null) {
+            // insert the note fragment
+            val ft = supportFragmentManager.beginTransaction()
+            if (note.type == APNotepadConstants.NOTE_TYPE_PLAINTEXT) {
+                ft.replace(R.id.noteFragmentPlaceholder, TextNoteFragment(), "noteBodyFragment")
+            } else {
+                ft.replace(R.id.noteFragmentPlaceholder, TodoNoteFragment(), "noteBodyFragment")
+            }
+            ft.commit()
         }
-        ft.commit()
     }
 
     override fun onPause() {
