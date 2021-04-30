@@ -12,6 +12,6 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
-        <item name="colorNotePreviewText">@color/black</item>
+        <item name="colorNotePreviewText">?android:attr/textColorPrimary</item>
     </style>
 </resources>

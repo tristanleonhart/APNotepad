@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextSwitcher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -75,6 +76,10 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             // go up one folder level
             folderLevelUp(false)
         }
+        // fix breadcrumbs previous item width bug
+        val breadcrumbsPrevItem = findViewById<TextSwitcher>(R.id.vBreadcrumbPreviousItemSwitcher)
+        breadcrumbsPrevItem.measureAllChildren = false
+        breadcrumbsPrevItem.minimumWidth = 0
 
         // uncomment line below to reset database on app startup
         //applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
