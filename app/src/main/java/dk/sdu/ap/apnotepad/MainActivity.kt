@@ -57,6 +57,9 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             // create a folder or subfolder
             FolderEditDialog().show(supportFragmentManager, null)
             return true
+        } else if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
         }
         return false
     }
@@ -97,6 +100,9 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             path.clear()
             path.add(APNotepadConstants.ROOT_FOLDER_ID)
         }
+
+        // display a back arrow if we are in a sub folder
+        updateBackArrow()
 
         // restore the current item index
         currentItemIdx = savedInstanceState?.getInt("currentItemIdx", -1) ?: -1
@@ -189,6 +195,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
 
     private fun folderLevelUp(updateBreadcrumbs: Boolean) {
         path.removeLast()
+        updateBackArrow()
         if (updateBreadcrumbs) {
             breadcrumbs.removeLastItem()
         }
@@ -224,6 +231,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             val folderId = folderItems[position].id
             // go down one folder level
             path.add(folderId)
+            updateBackArrow()
             val folder = databaseHelper.getFolder(folderId)
             val breadcrumbText = if (folder.name.isEmpty()) {
                 APNotepadConstants.UNTITLED_PLACEHOLDER
@@ -277,5 +285,14 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             index++
         }
         return index
+    }
+
+    private fun updateBackArrow() {
+        if (path.size > 1) {
+            // we are in a sub folder
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        } else {
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        }
     }
 }

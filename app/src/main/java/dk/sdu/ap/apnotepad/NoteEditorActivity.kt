@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.MenuItem
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.vanniktech.emoji.EmojiEditText
@@ -21,6 +22,15 @@ class NoteEditorActivity : AppCompatActivity() {
     private var folderId: Long = -1
     lateinit var note: Note
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        super.onOptionsItemSelected(item)
+        if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
+        }
+        return false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // enable the emoji layout components
@@ -29,6 +39,9 @@ class NoteEditorActivity : AppCompatActivity() {
 
         // get database
         databaseHelper = DatabaseHelper.getInstance(this)
+
+        // display a back arrow
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // restore editor state
         noteCreated = savedInstanceState?.getBoolean("noteCreated", false) ?: false
