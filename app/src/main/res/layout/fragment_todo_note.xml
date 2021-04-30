@@ -56,5 +56,6 @@
         android:contentDescription="@string/add_checklist_item_hint"
         android:focusable="true"
         app:srcCompat="@drawable/ic_baseline_add_24"
-        app:backgroundTint="#03A9F4" />
+        app:tint="@color/white"
+        app:backgroundTint="@color/dark_blue_accent" />
 </FrameLayout>
