@@ -20,6 +20,8 @@
         android:textColor="#4CAF50"
         android:textSize="20sp"
         android:textStyle="bold"
+        app:drawableStartCompat="@drawable/folder_arrow_no_padding"
+        app:drawableTint="#4CAF50"
         app:layout_constraintBaseline_toBaselineOf="@+id/listFolderEmoji"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/listFolderEmoji"
