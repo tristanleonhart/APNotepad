@@ -1,5 +1,6 @@
 package dk.sdu.ap.apnotepad
 
+import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -9,12 +10,19 @@ import android.view.ViewGroup
 import android.widget.TextSwitcher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import androidx.core.view.MenuCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cafe.adriel.krumbsview.KrumbsView
 import cafe.adriel.krumbsview.model.Krumb
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
+import java.io.File
+import java.io.FileWriter
 
 class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClickListener {
     lateinit var databaseHelper: DatabaseHelper
@@ -31,10 +39,13 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
     val folderItems : ArrayList<FolderItem> = ArrayList()
     val adapter = FolderItemRecyclerViewAdapter(folderItems)
 
+    private val gson = Gson()
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // initialize menu to create notes and folders
         val menuInflater = menuInflater
         menuInflater.inflate(R.menu.create_menu, menu)
+        MenuCompat.setGroupDividerEnabled(menu, true)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -56,6 +67,10 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         } else if (item.itemId == R.id.add_folder) {
             // create a folder or subfolder
             FolderEditDialog().show(supportFragmentManager, null)
+            return true
+        } else if (item.itemId == R.id.export_notes) {
+            // export all notes and folders as json file
+            exportData()
             return true
         } else if (item.itemId == android.R.id.home) {
             onBackPressed()
@@ -294,5 +309,52 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         } else {
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
         }
+    }
+
+    private fun exportData() {
+        // create the export
+        val root = JsonObject()
+        writeFolderContents(root, APNotepadConstants.ROOT_FOLDER_ID)
+        // create the directory
+        val exportPath = File(filesDir, "json_export")
+        if (!exportPath.exists()) {
+            exportPath.mkdir()
+        }
+        // create the file
+        val jsonFile = File(exportPath.path, "export.apn")
+        FileWriter(jsonFile).use {
+            gson.toJson(root, it)
+        }
+        // share the file
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", jsonFile)
+        val share = Intent.createChooser(Intent().apply {
+            action = Intent.ACTION_SEND
+            clipData = ClipData.newRawUri("", uri)
+            putExtra(Intent.EXTRA_STREAM, uri)
+            type = "text/json"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }, null)
+        startActivity(share)
+    }
+
+    private fun writeFolderContents(target: JsonObject, folder_id: Long) {
+        // get the folder contents
+        val items = databaseHelper.getFolderItems(folder_id)
+        val notes = JsonArray()
+        val folders = JsonArray()
+        for (item in items) {
+            if (item.isNote) {
+                val note = databaseHelper.getNote(item.id)
+                val noteJson = gson.toJsonTree(note)
+                notes.add(noteJson)
+            } else {
+                val folder = databaseHelper.getFolder(item.id)
+                val folderJson = gson.toJsonTree(folder)
+                writeFolderContents(folderJson.asJsonObject, item.id)
+                folders.add(folderJson)
+            }
+        }
+        target.add("notes", notes)
+        target.add("folders", folders)
     }
 }

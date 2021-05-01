@@ -11,4 +11,6 @@
     <string name="note_title_hint">Note title</string>
     <string name="item_hint">Item</string>
     <string name="create_checklist_item">Add items to this checklist using the button at the bottom.</string>
+    <string name="import_notes">Import</string>
+    <string name="export_notes">Export</string>
 </resources>
