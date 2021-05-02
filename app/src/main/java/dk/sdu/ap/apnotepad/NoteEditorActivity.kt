@@ -57,7 +57,7 @@ class NoteEditorActivity : AppCompatActivity() {
             val emoji = APNotepadConstants.DEFAULT_EMOJI
             val title = ""
             val text = if (type == APNotepadConstants.NOTE_TYPE_PLAINTEXT) "" else "[]"
-            note = Note(-1, type, emoji, title, text)
+            note = Note(APNotepadConstants.AUTO_INCREMENT_ID, type, emoji, title, text)
             note.id = databaseHelper.insertNote(note, folderId)
             intent.putExtra("noteId", note.id)
         } else {

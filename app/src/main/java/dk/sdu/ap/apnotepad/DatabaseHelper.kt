@@ -9,6 +9,9 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
 
     fun insertNote(note: Note, folder_id: Long) : Long {
         val contentValues = ContentValues()
+        if (note.id != APNotepadConstants.AUTO_INCREMENT_ID) {
+            contentValues.put(ID_NOTES, note.id)
+        }
         contentValues.put(EMOJI_NOTES, note.emoji)
         contentValues.put(TITLE_NOTES, note.title)
         contentValues.put(TEXT_NOTES, note.text)
@@ -27,6 +30,9 @@ class DatabaseHelper private constructor(c: Context?) : SQLiteOpenHelper(c, DB_N
 
     fun insertFolder(folder: Folder) : Long {
         val contentValues = ContentValues()
+        if (folder.id != APNotepadConstants.AUTO_INCREMENT_ID) {
+            contentValues.put(ID_FOLDERS, folder.id)
+        }
         contentValues.put(EMOJI_FOLDERS, folder.emoji)
         contentValues.put(NAME_FOLDERS, folder.name)
         contentValues.put(PARENT_ID_FOLDERS, folder.parent_id)

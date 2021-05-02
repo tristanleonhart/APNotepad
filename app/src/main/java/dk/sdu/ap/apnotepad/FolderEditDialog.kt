@@ -44,7 +44,12 @@ class FolderEditDialog : DialogFragment() {
                 activity.adapter.notifyItemChanged(activity.currentItemIdx)
             } else {
                 // folder is being created
-                val folder = Folder(-1, emoji, name, activity.path.last())
+                val folder = Folder(
+                    APNotepadConstants.AUTO_INCREMENT_ID,
+                    emoji,
+                    name,
+                    activity.path.last()
+                )
                 val folderId = activity.databaseHelper.insertFolder(folder)
                 val folderItem = FolderItem(false, folderId, emoji, name, null)
                 activity.folderItems.add(0, folderItem)

@@ -10,6 +10,7 @@ class APNotepadConstants {
         const val FOLDER_ITEM_TYPE_FOLDER = 1
         // database constants
         const val ROOT_FOLDER_ID : Long = 0
+        const val AUTO_INCREMENT_ID : Long = -1
         // default emoji
         val DEFAULT_EMOJI = String(Character.toChars(0x1F60A))
         // checkboxes
@@ -17,5 +18,9 @@ class APNotepadConstants {
         const val CHECKBOX_UNCHECKED = 0x2610.toChar()
         // default strings
         const val UNTITLED_PLACEHOLDER = "Untitled"
+        // request codes
+        const val REQUEST_CODE_PERMISSIONS_IMPORT = 1
+        const val REQUEST_CODE_EDIT_NOTE = 2
+        const val REQUEST_CODE_IMPORT_NOTES = 3
     }
 }

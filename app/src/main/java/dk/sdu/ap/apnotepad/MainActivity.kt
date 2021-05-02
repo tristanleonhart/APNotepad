@@ -1,6 +1,7 @@
 package dk.sdu.ap.apnotepad
 
 import android.Manifest
+import android.app.Activity
 import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -19,13 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cafe.adriel.krumbsview.KrumbsView
 import cafe.adriel.krumbsview.model.Krumb
-import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
+import com.google.gson.*
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
 import java.io.File
 import java.io.FileWriter
+import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClickListener {
     lateinit var databaseHelper: DatabaseHelper
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             intent.putExtra("type", type)
             intent.putExtra("folderId", path.last())
             // start the note editor activity
-            startActivityForResult(intent, 0)
+            startActivityForResult(intent, APNotepadConstants.REQUEST_CODE_EDIT_NOTE)
             return true
         } else if (item.itemId == R.id.add_folder) {
             // create a folder or subfolder
@@ -177,31 +177,67 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val intent = data as Intent
-        if (intent.getBooleanExtra("noteCreated", false)) {
-            // a note was created
-            val noteId = intent.getLongExtra("noteId", -1)
-            val note = databaseHelper.getNote(noteId)
-            val folderItem = NoteUtils.folderItemFromNote(note)
-            // check if the folder item is already present
-            var index = folderItems.indexOf(folderItem)
-            if (index >= 0) {
-                // update the folder item
-                folderItems[index] = folderItem
-                adapter.notifyItemChanged(index)
-            } else {
-                // insert the folder item
-                index = getInsertNoteIndex()
-                folderItems.add(index, folderItem)
-                adapter.notifyItemInserted(index)
+        when (requestCode) {
+            APNotepadConstants.REQUEST_CODE_EDIT_NOTE -> {
+                val intent = data as Intent
+                if (intent.getBooleanExtra("noteCreated", false)) {
+                    // a note was created
+                    val noteId = intent.getLongExtra("noteId", -1)
+                    val note = databaseHelper.getNote(noteId)
+                    val folderItem = NoteUtils.folderItemFromNote(note)
+                    // check if the folder item is already present
+                    var index = folderItems.indexOf(folderItem)
+                    if (index >= 0) {
+                        // update the folder item
+                        folderItems[index] = folderItem
+                        adapter.notifyItemChanged(index)
+                    } else {
+                        // insert the folder item
+                        index = getInsertNoteIndex()
+                        folderItems.add(index, folderItem)
+                        adapter.notifyItemInserted(index)
+                    }
+                } else {
+                    // a note was updated
+                    val noteId = folderItems[currentItemIdx].id
+                    val note = databaseHelper.getNote(noteId)
+                    folderItems[currentItemIdx] = NoteUtils.folderItemFromNote(note)
+                    adapter.notifyItemChanged(currentItemIdx)
+                    currentItemIdx = -1
+                }
             }
-        } else {
-            // a note was updated
-            val noteId = folderItems[currentItemIdx].id
-            val note = databaseHelper.getNote(noteId)
-            folderItems[currentItemIdx] = NoteUtils.folderItemFromNote(note)
-            adapter.notifyItemChanged(currentItemIdx)
-            currentItemIdx = -1
+            APNotepadConstants.REQUEST_CODE_IMPORT_NOTES -> {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    try {
+                        val uri = data.data!!
+                        val root : JsonObject
+                        contentResolver.openInputStream(uri).use { inputStream ->
+                            InputStreamReader(inputStream).use {
+                                // parse json file
+                                root = JsonParser.parseReader(it).asJsonObject
+                            }
+                        }
+                        // check file format
+                        if (root.get("application").asString != "APNotepad") {
+                            importFailed()
+                            return
+                        }
+                        // reset the database
+                        databaseHelper.close()
+                        applicationContext.deleteDatabase(DatabaseHelper.DB_NAME)
+                        // read data from json
+                        readFolderContents(root, APNotepadConstants.ROOT_FOLDER_ID)
+                        // go to the root folder
+                        toRootFolder()
+                        // import succeeded
+                        Toast.makeText(this, "Import successful!", Toast.LENGTH_SHORT).show()
+                    } catch (e : Exception) {
+                        importFailed()
+                    }
+                } else {
+                    importFailed()
+                }
+            }
         }
     }
 
@@ -221,6 +257,17 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         if (updateBreadcrumbs) {
             breadcrumbs.removeLastItem()
         }
+        folderItems.clear()
+        folderItems.addAll(databaseHelper.getFolderItems(path.last()))
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun toRootFolder() {
+        // go to the root folder
+        path.clear()
+        path.add(APNotepadConstants.ROOT_FOLDER_ID)
+        updateBackArrow()
+        breadcrumbs.goToFirstItem()
         folderItems.clear()
         folderItems.addAll(databaseHelper.getFolderItems(path.last()))
         adapter.notifyDataSetChanged()
@@ -247,7 +294,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             intent.putExtra("noteId", note.id)
             intent.putExtra("folderId", path.last())
             // start the note editor activity
-            startActivityForResult(intent, 0)
+            startActivityForResult(intent, APNotepadConstants.REQUEST_CODE_EDIT_NOTE)
         } else {
             // a folder was clicked (show its contents)
             val folderId = folderItems[position].id
@@ -324,7 +371,7 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
                 PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(
                     arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    0
+                    APNotepadConstants.REQUEST_CODE_PERMISSIONS_IMPORT
                 )
                 return
             }
@@ -333,7 +380,12 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
     }
 
     private fun browseFiles() {
-
+        val browse = Intent.createChooser(Intent().apply {
+            action = Intent.ACTION_GET_CONTENT
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }, null)
+        startActivityForResult(browse, APNotepadConstants.REQUEST_CODE_IMPORT_NOTES)
     }
 
     override fun onRequestPermissionsResult(
@@ -342,16 +394,26 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            browseFiles()
-        } else {
-            Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show()
+        when (requestCode) {
+            APNotepadConstants.REQUEST_CODE_PERMISSIONS_IMPORT -> {
+                if (grantResults.isNotEmpty() && grantResults[0] ==
+                    PackageManager.PERMISSION_GRANTED) {
+                    browseFiles()
+                } else {
+                    Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+    }
+
+    private fun importFailed() {
+        Toast.makeText(this, "Import failed!", Toast.LENGTH_SHORT).show()
     }
 
     private fun exportData() {
         // create the export
         val root = JsonObject()
+        root.addProperty("application", "APNotepad")
         writeFolderContents(root, APNotepadConstants.ROOT_FOLDER_ID)
         // create the directory
         val exportPath = File(filesDir, "json_export")
@@ -373,6 +435,20 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }, null)
         startActivity(share)
+    }
+
+    private fun readFolderContents(source: JsonObject, folder_id: Long) {
+        val notes = source.get("notes").asJsonArray
+        val folders = source.get("folders").asJsonArray
+        for (noteJson in notes) {
+            val note = gson.fromJson(noteJson, Note::class.java)
+            databaseHelper.insertNote(note, folder_id)
+        }
+        for (folderJson in folders) {
+            val folder = gson.fromJson(folderJson, Folder::class.java)
+            databaseHelper.insertFolder(folder)
+            readFolderContents(folderJson.asJsonObject, folder.id)
+        }
     }
 
     private fun writeFolderContents(target: JsonObject, folder_id: Long) {
