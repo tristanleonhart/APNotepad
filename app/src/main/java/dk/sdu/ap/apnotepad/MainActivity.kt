@@ -112,6 +112,11 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
         // get database
         databaseHelper = DatabaseHelper.getInstance(this)
 
+        // check if database exists
+        if (!applicationContext.databaseList().contains(DatabaseHelper.DB_NAME)) {
+            loadDefaultData()
+        }
+
         // check if a saved path is available
         val savedPath = savedInstanceState?.getLongArray("path")
         if (savedPath != null) {
@@ -435,6 +440,21 @@ class MainActivity : AppCompatActivity(), FolderItemRecyclerViewAdapter.ItemClic
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }, null)
         startActivity(share)
+    }
+
+    private fun loadDefaultData() {
+        val root : JsonObject
+        resources.openRawResource(R.raw.default_data).use { inputStream ->
+            InputStreamReader(inputStream).use {
+                // parse json file
+                root = JsonParser.parseReader(it).asJsonObject
+            }
+        }
+        // check file format
+        if (root.get("application").asString == "APNotepad") {
+            // read data from json
+            readFolderContents(root, APNotepadConstants.ROOT_FOLDER_ID)
+        }
     }
 
     private fun readFolderContents(source: JsonObject, folder_id: Long) {

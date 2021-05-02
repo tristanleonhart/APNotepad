@@ -1,0 +1,198 @@
+{
+  "application": "APNotepad",
+  "notes": [
+    {
+      "emoji": "🥳",
+      "id": 4,
+      "text": "The app that will transform the way you take and work with your notes every day.",
+      "title": "Welcome to APNotepad",
+      "type": 1
+    },
+    {
+      "emoji": "📕",
+      "id": 3,
+      "text": "[{\"checked\":true,\"text\":\"Read this checklist\"},{\"checked\":false,\"text\":\"Take a look at all the other notes\"},{\"checked\":false,\"text\":\"Also look inside the folders\"}]",
+      "title": "First steps",
+      "type": 2
+    },
+    {
+      "emoji": "✏️",
+      "id": 1,
+      "text": "Create a new note by clicking on the menu at the top and then selecting \"Add Note\".\n\nYou have to leave this note editor first.",
+      "title": "Create a note",
+      "type": 1
+    }
+  ],
+  "folders": [
+    {
+      "emoji": "🍎",
+      "id": 3,
+      "name": "User Guide",
+      "parent_id": 0,
+      "notes": [
+        {
+          "emoji": "✏️",
+          "id": 18,
+          "text": "You can create new notes (plaintext or checklist) and folders using the menu at the top.\n\nYou have to leave this note editor first.",
+          "title": "Create notes and folders",
+          "type": 1
+        },
+        {
+          "emoji": "📋",
+          "id": 17,
+          "text": "[{\"checked\":false,\"text\":\"Add items using the + button\"},{\"checked\":true,\"text\":\"Check an item if you completed it\"},{\"checked\":false,\"text\":\"The checkbox is shown in the preview\"},{\"checked\":false,\"text\":\"Delete items using a long press\"}]",
+          "title": "Using checklists",
+          "type": 2
+        },
+        {
+          "emoji": "🦁",
+          "id": 8,
+          "text": "Every note and every folder is assigned an Emoji. Use this Emoji to visually represent the contents of the note or folder.\n\nThe Emoji of a note can be changed by opening the note and then clicking on the Emoji.\n\nTo change the Emoji of a folder, long press the folder and then click on the Emoji.\n\nCustomizing your notes and folders with Emojis will help you find the things you are looking for more easily.\n\nYou can also use the Emojis to simply make your note app look more beautiful.",
+          "title": "Use Emojis as visual cues",
+          "type": 1
+        },
+        {
+          "emoji": "🥬",
+          "id": 7,
+          "text": "And the folder name is shown in green.",
+          "title": "Folders are always at the top",
+          "type": 1
+        },
+        {
+          "emoji": "🦊",
+          "id": 6,
+          "text": "You can create any number of notes and folders inside a folder. Folders can be nested within each other. There is no limit to the depth of your folder hierarchy. The \"Home\" folder is always at the top of the hierarchy and can not be deleted.",
+          "title": "Create nested folders",
+          "type": 1
+        },
+        {
+          "emoji": "🗑️",
+          "id": 5,
+          "text": "Folders and notes can be deleted by long pressing them.\n\nIf a folder is deleted, all it\u0027s contents will also be deleted.",
+          "title": "Deleting items",
+          "type": 1
+        }
+      ],
+      "folders": [
+        {
+          "emoji": "🍏",
+          "id": 8,
+          "name": "How to use folders",
+          "parent_id": 3,
+          "notes": [
+            {
+              "emoji": "🔍",
+              "id": 23,
+              "text": "[{\"checked\":false,\"text\":\"Create folders for different projects\"},{\"checked\":false,\"text\":\"Sort your notes by topic\"},{\"checked\":false,\"text\":\"Nest folders to group related items\"}]",
+              "title": "Folder suggestions",
+              "type": 2
+            },
+            {
+              "emoji": "🔄",
+              "id": 22,
+              "text": "To open a folder, you simply click on it. The root of all folders is the \"Home\" folder.\n\nYou can use the back button of your divice or the back arrow at the top to navigate up in the folder hierarchy.\n\nThe name of the current folder is always displayed by the blue path incidator at the very top. You can also use this path indicator to navigate back by swiping right or by clicking on the previous folder name (at the left).",
+              "title": "Folder navigation",
+              "type": 1
+            }
+          ],
+          "folders": []
+        }
+      ]
+    },
+    {
+      "emoji": "🤫",
+      "id": 2,
+      "name": "About this app",
+      "parent_id": 0,
+      "notes": [
+        {
+          "emoji": "💡",
+          "id": 21,
+          "text": "This app was developed with great attention to detail. Not only regarding the visible part (UI) of the app, but also when it comes to the code behind the scenes.\n\nWe put special attention to properly saving and restoring the application state after a configuration change.\n\nWe therefore encourage you, to try rotating the screen or switching to dark mode (*) while running our app.\n\nYou will notice, that the state is perfectly restored in any situation. (Yes, we actually made sure that it always works.)\n\n* About the dark mode: This app provides support for system wide dark (or night) mode. Try it out by turing on dark mode in your settings.",
+          "title": "Technical details",
+          "type": 1
+        },
+        {
+          "emoji": "💾",
+          "id": 20,
+          "text": "A special feature integrated into our note app is the option to import and export all data.\n\nWe would like you, to try this feature by following thses three simple steps:\n\n1. Export all data (for example to Google Drive) by clicking on the menu at the top.\n(You have to leave this note editor first.)\n\n2. Change or delete some of the cotent in the app.\n\n3. Re-import the data from the the file that was generated in the first step.\n\nYou will notice, that we actually made the file access and share content functionality of Andoird work. And it\u0027s reliable, just like the rest of this app.",
+          "title": "Import and export feature",
+          "type": 1
+        }
+      ],
+      "folders": []
+    },
+    {
+      "emoji": "📘",
+      "id": 1,
+      "name": "SDU notes",
+      "parent_id": 0,
+      "notes": [],
+      "folders": [
+        {
+          "emoji": "📕",
+          "id": 5,
+          "name": "Android Programming",
+          "parent_id": 1,
+          "notes": [
+            {
+              "emoji": "🦆",
+              "id": 14,
+              "text": "The world consists of Activities and Fragments. Everything is connected using Intents. Kotlin is better than Java. Develop cool apps...",
+              "title": "Key takeaways",
+              "type": 1
+            }
+          ],
+          "folders": []
+        },
+        {
+          "emoji": "📘",
+          "id": 4,
+          "name": "Other subjects",
+          "parent_id": 1,
+          "notes": [
+            {
+              "emoji": "🐱",
+              "id": 13,
+              "text": "This note has no title but it contains\nline\nbreaks.",
+              "title": "",
+              "type": 1
+            },
+            {
+              "emoji": "🐓",
+              "id": 12,
+              "text": "[]",
+              "title": "This checklist is empty",
+              "type": 2
+            },
+            {
+              "emoji": "🦓",
+              "id": 11,
+              "text": "",
+              "title": "This note is empty",
+              "type": 1
+            }
+          ],
+          "folders": [
+            {
+              "emoji": "🦌",
+              "id": 7,
+              "name": "This folder has a title",
+              "parent_id": 4,
+              "notes": [],
+              "folders": []
+            },
+            {
+              "emoji": "🦥",
+              "id": 6,
+              "name": "",
+              "parent_id": 4,
+              "notes": [],
+              "folders": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
