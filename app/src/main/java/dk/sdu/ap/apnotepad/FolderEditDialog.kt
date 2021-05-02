@@ -78,7 +78,7 @@ class FolderEditDialog : DialogFragment() {
         val view = View.inflate(context, R.layout.folder_edit_dialog, null)
         editFolderDialogName = view.findViewById(R.id.editFolderDialogName)
         editFolderDialogEmoji = view.findViewById(R.id.editFolderDialogEmoji)
-        editFolderRootView = view.findViewById(R.id.edit_folder_dialog_root_view)
+        editFolderRootView = view.findViewById(R.id.editFolderDialogRootView)
         if (activity.currentItemIdx >= 0) {
             // folder is being edited
             val name = activity.folderItems[activity.currentItemIdx].name

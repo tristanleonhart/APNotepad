@@ -14,29 +14,32 @@
         <TextView
             android:id="@+id/noTodoItems"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
+            android:layout_height="0dp"
+            android:gravity="center"
             android:text="@string/no_items_to_display"
             android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@+id/noTodoItemsHint"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_weight="0.4" />
 
         <TextView
+            android:id="@+id/noTodoItemsHint"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginStart="24dp"
             android:layout_marginLeft="24dp"
-            android:layout_marginTop="128dp"
             android:layout_marginEnd="24dp"
             android:layout_marginRight="24dp"
-            android:gravity="center"
+            android:gravity="center|top"
             android:text="@string/create_checklist_item"
             android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/noTodoItems" />
+            app:layout_constraintTop_toBottomOf="@+id/noTodoItems"
+            app:layout_constraintVertical_weight="0.6" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -90,7 +90,7 @@
             {
               "emoji": "🔄",
               "id": 22,
-              "text": "To open a folder, you simply click on it. The root of all folders is the \"Home\" folder.\n\nYou can use the back button of your divice or the back arrow at the top to navigate up in the folder hierarchy.\n\nThe name of the current folder is always displayed by the blue path incidator at the very top. You can also use this path indicator to navigate back by swiping right or by clicking on the previous folder name (at the left).",
+              "text": "To open a folder, you simply click on it. The root of all folders is the \"Home\" folder.\n\nYou can use the back button of your device or the back arrow at the top to navigate up in the folder hierarchy.\n\nThe name of the current folder is always displayed by the blue path indicator at the very top. You can also use this path indicator to navigate back by swiping right or by clicking on the previous folder name (at the left).",
               "title": "Folder navigation",
               "type": 1
             }
@@ -115,7 +115,7 @@
         {
           "emoji": "💾",
           "id": 20,
-          "text": "A special feature integrated into our note app is the option to import and export all data.\n\nWe would like you, to try this feature by following thses three simple steps:\n\n1. Export all data (for example to Google Drive) by clicking on the menu at the top.\n(You have to leave this note editor first.)\n\n2. Change or delete some of the cotent in the app.\n\n3. Re-import the data from the the file that was generated in the first step.\n\nYou will notice, that we actually made the file access and share content functionality of Andoird work. And it\u0027s reliable, just like the rest of this app.",
+          "text": "A special feature integrated into our note app is the option to import and export all data.\n\nWe would like you, to try this feature by following these three simple steps:\n\n1. Export all data (for example to Google Drive) by clicking on the menu at the top.\n(You have to leave this note editor first.)\n\n2. Change or delete some of the content in the app.\n\n3. Re-import the data from the the file that was generated in the first step.\n\nYou will notice, that we actually made the file access and share content functionality of Android work. And it\u0027s reliable, just like the rest of this app.",
           "title": "Import and export feature",
           "type": 1
         }
