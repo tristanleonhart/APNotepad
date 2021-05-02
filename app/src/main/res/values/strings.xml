@@ -6,7 +6,7 @@
     <string name="add_note_checklist">Add Checklist</string>
     <string name="add_folder">Add Folder</string>
     <string name="folder_name_hint">Folder name</string>
-    <string name="note_text_hint">Note text</string>
+    <string name="note_text_hint">Note text…</string>
     <string name="add_checklist_item_hint">Add checklist item</string>
     <string name="note_title_hint">Note title</string>
     <string name="item_hint">Item</string>
