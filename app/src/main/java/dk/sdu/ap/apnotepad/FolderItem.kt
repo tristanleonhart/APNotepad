@@ -9,10 +9,10 @@ data class FolderItem(var isNote: Boolean, var id: Long, var emoji: String, var 
         if (other !is FolderItem) {
             return false
         }
-        return id == other.id
+        return id == other.id && isNote == other.isNote
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        return id.hashCode() xor isNote.hashCode()
     }
 }
